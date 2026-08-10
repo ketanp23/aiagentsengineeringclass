@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connect Claude to Live Business Systems with MCP — Harbourstone Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2338; --ink-soft:#3A4360; --paper:#F6F7F3; --card:#FFFFFF;
+    --line:#DDE0D8; --gray:#6A7183;
+    --marker:#FFDE59; --marker-soft:#FFF3BF;
+    --cobalt:#2D5BFF; --cobalt-soft:#E9EEFF;
+    --green:#1E8E5A; --green-soft:#E4F4EC;
+    --violet:#7A3FD1; --violet-soft:#F1E9FC;
+    --red-soft:#FDECEC;
+    --amber:#B7791A; --amber-soft:#FBF1DE;
+    --radius:14px;
+    --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+  mark{background:linear-gradient(104deg,transparent .5%,var(--marker) 3%,var(--marker) 97%,transparent 99.5%);padding:0 .25em;border-radius:2px;color:var(--ink);font-weight:600}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--cobalt);font-weight:500}
+  h2{font-family:var(--display);font-weight:700;font-size:clamp(25px,3.2vw,34px);letter-spacing:-.01em;margin-top:8px}
+  h3{font-family:var(--display);font-weight:600;font-size:19px}
+  section{padding:60px 0}
+  .sec-head{margin-bottom:30px}
+  .sec-head p{color:var(--ink-soft);margin-top:10px;max-width:74ch}
+  code{font-family:var(--mono);font-size:.9em;background:#EEF0EA;border-radius:5px;padding:1px 6px;color:var(--ink)}
+
+  /* header */
+  header.hero{background:var(--ink);color:#fff;padding:60px 0 48px;border-bottom:4px solid var(--marker)}
+  .hero .eyebrow{color:var(--marker);margin-bottom:14px}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,4.6vw,48px);line-height:1.08;max-width:820px}
+  .hero p.sub{margin-top:16px;color:#C6CCDF;max-width:680px;font-size:17px}
+  .crumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px;font-family:var(--mono);font-size:12.5px}
+  .crumbs span{border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:6px 14px;color:#E8EBF5}
+
+  /* sticky nav */
+  nav.top{position:sticky;top:0;z-index:30;background:rgba(246,247,243,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;gap:24px;overflow-x:auto}
+  nav.top a{display:block;padding:14px 0;white-space:nowrap;font-size:14px;font-weight:600;color:var(--gray);text-decoration:none;border-bottom:2.5px solid transparent}
+  nav.top a:hover{color:var(--cobalt);border-bottom-color:var(--cobalt)}
+  nav.top a.na{color:var(--ink)}
+  nav.top a.nb{color:var(--violet)}
+
+  /* cards */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px}
+  .definition{border-left:5px solid var(--cobalt);font-size:17px}
+  .definition strong{color:var(--cobalt)}
+  .definition .vs{margin-top:16px;padding-top:16px;border-top:1px dashed var(--line);font-size:15px;color:var(--ink-soft)}
+
+  .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:16px;margin-top:22px}
+  .toolcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .toolcard .mode-tag{margin-bottom:10px}
+  .toolcard p{font-size:14.5px;color:var(--ink-soft);margin-top:6px}
+  .mode-tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;border-radius:6px;padding:4px 10px;font-weight:600}
+  .mode-chat{background:var(--ink);color:var(--marker)}
+  .mode-web{background:var(--cobalt-soft);color:var(--cobalt)}
+  .mode-cowork{background:var(--green-soft);color:var(--green)}
+
+  /* persona cards */
+  .persona-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+  .persona{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;display:flex;gap:15px;align-items:flex-start}
+  .avatar{width:46px;height:46px;border-radius:12px;flex:0 0 46px;display:grid;place-items:center;font-family:var(--display);font-weight:700;color:#fff;font-size:17px}
+  .av-d{background:linear-gradient(135deg,#2D5BFF,#5566E8)} .av-r{background:linear-gradient(135deg,#1E8E5A,#14A08E)}
+  .persona .who{font-weight:600;font-size:15.5px}
+  .persona .role{font-size:12px;color:var(--gray);font-family:var(--mono);letter-spacing:.02em;margin-bottom:5px}
+  .persona p{font-size:14px;color:var(--ink-soft)}
+  @media(max-width:820px){.persona-grid{grid-template-columns:1fr}}
+
+  /* criteria */
+  .crit{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-top:18px;overflow:hidden}
+  .crit-head{padding:20px 26px 14px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:13px;flex-wrap:wrap}
+  .crit-letter{font-family:var(--display);font-weight:700;font-size:30px;line-height:1}
+  .crit.rec .crit-letter{color:var(--cobalt)} .crit.str .crit-letter{color:var(--violet)} .crit.del .crit-letter{color:var(--green)}
+  .crit-head h3{margin:0;font-size:20px}
+  .crit-q{font-size:14px;color:var(--gray);font-style:italic;flex-basis:100%}
+  .crit-body{padding:20px 26px 24px;display:grid;grid-template-columns:1.05fr .95fr;gap:24px}
+  .crit-body h4{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);margin-bottom:8px}
+  .crit-body p{font-size:14.5px;color:var(--ink-soft);margin-bottom:11px}
+  .ex{border-radius:10px;padding:11px 14px;font-size:13.5px;margin-bottom:8px;line-height:1.55}
+  .ex b{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+  .ex.good{background:var(--green-soft);color:#175C3D} .ex.good b{color:var(--green)}
+  .ex.bad{background:var(--red-soft);color:#7C3530} .ex.bad b{color:#B4443E}
+  .scale{list-style:none;margin-top:2px}
+  .scale li{display:flex;gap:11px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px;color:var(--ink-soft)}
+  .scale li:last-child{border-bottom:none}
+  .scale .n{font-family:var(--mono);font-weight:600;font-size:11.5px;min-width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--paper);border:1px solid var(--line);color:var(--ink)}
+  .evidence{background:var(--marker-soft);border-radius:10px;padding:12px 15px;font-size:13px;margin-top:12px;color:var(--ink)}
+  .evidence b{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:3px}
+
+  /* client / scenario card */
+  .brief-wrap{display:grid;grid-template-columns:1.25fr .75fr;gap:20px;align-items:start;margin-top:20px}
+  .client-card{background:var(--ink);color:#DCE0EE;border-radius:var(--radius);padding:22px 24px}
+  .client-card h3{color:#fff;font-size:16px;margin-bottom:3px}
+  .client-card .cc-sub{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--marker);margin-bottom:12px}
+  .fact{display:flex;gap:10px;border-top:1px solid rgba(255,255,255,.12);padding:8px 0;font-size:13px}
+  .fact .fk{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8B94AE;min-width:86px;padding-top:2px}
+  .fict-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8B94AE;margin-top:12px;border-top:1px dashed rgba(255,255,255,.18);padding-top:9px}
+
+  /* track chips */
+  .tracks{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+  .track{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .track .tag{font-family:var(--display);font-weight:700;font-size:15px;color:#fff;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex:0 0 34px;background:var(--cobalt)}
+  .track:nth-child(2) .tag{background:#0E7C7B} .track:nth-child(3) .tag{background:var(--violet)}
+  .track .tt{font-weight:600;font-size:15px} .track .ts{font-size:13px;color:var(--gray)}
+
+  /* step cards */
+  .step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-top:26px}
+  .step-head{display:flex;align-items:center;gap:16px;padding:18px 24px;border-bottom:1px solid var(--line);background:#FBFBF7}
+  .step-no{font-family:var(--mono);font-weight:600;font-size:13px;background:var(--ink);color:var(--marker);border-radius:9px;padding:8px 13px;letter-spacing:.06em;flex-shrink:0}
+  .b-steps .step-no{background:var(--violet);color:#fff}
+  .step-head h3{font-size:18px}
+  .step-head p{font-size:13.5px;color:var(--gray);margin-top:2px}
+  .step-body{padding:22px 24px}
+  .do-list{margin:2px 0 14px;border-left:3px solid var(--marker);padding:2px 0 2px 16px}
+  .b-steps .do-list{border-left-color:var(--violet)}
+  .do-list li{list-style:none;position:relative;padding-left:24px;margin-bottom:8px;color:var(--ink-soft);font-size:15px}
+  .do-list li::before{content:"→";position:absolute;left:0;color:var(--cobalt);font-weight:700}
+  .tip{background:var(--marker-soft);border-radius:10px;padding:12px 16px;font-size:14px;color:var(--ink);margin-top:12px}
+  .redteam{background:var(--red-soft);border:1px solid #F1C7C4;border-radius:10px;padding:12px 16px;font-size:14px;color:#7A2418;margin-top:12px}
+  .redteam .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#B4443E;display:block;margin-bottom:4px}
+  .redteam b{color:#5e1a11}
+
+  .prompt-box{background:var(--ink);color:#E9ECF6;border-radius:12px;padding:17px 19px;font-family:var(--mono);font-size:13px;line-height:1.7;margin:12px 0 6px}
+  .prompt-box .lbl{color:var(--marker);font-size:11px;letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:7px}
+  .prompt-box.simple{background:#3A4360}
+  .prompt-box.simple .lbl{color:#C9CFE2}
+  .prompt-box .fw-k{color:var(--marker);font-weight:600}
+
+  /* code / SKILL.md editor mockup */
+  .code-win{background:#0F1524;border:1px solid #232B41;border-radius:12px;overflow:hidden;margin:14px 0 6px;box-shadow:0 10px 30px rgba(27,35,56,.14)}
+  .code-bar{display:flex;align-items:center;gap:8px;background:#161D30;padding:9px 15px;border-bottom:1px solid #232B41}
+  .code-bar .fname{font-family:var(--mono);font-size:12px;color:#8FA0C8;margin-left:6px}
+  .code-bar .tag-mono{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#5E6A8C}
+  .code-body{padding:16px 18px;font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#C7CFE6;white-space:pre-wrap;overflow-x:auto}
+  .code-body .fm{color:#5E6A8C}
+  .code-body .k{color:#7FB0FF}
+  .code-body .s{color:#9DE0A6}
+  .code-body .h{color:var(--marker);font-weight:600}
+  .code-body .c{color:#6B7690}
+
+  /* mockups */
+  .shot{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card);box-shadow:0 8px 24px rgba(27,35,56,.07);margin:16px 0 6px}
+  .shot-bar{display:flex;align-items:center;gap:8px;background:#EDEFE9;padding:9px 16px;border-bottom:1px solid var(--line)}
+  .dot{width:10px;height:10px;border-radius:50%} .d1{background:#F26D6D}.d2{background:#F6C766}.d3{background:#6FCF8E}
+  .shot-url{font-family:var(--mono);font-size:12px;color:var(--gray);background:#fff;border:1px solid var(--line);border-radius:7px;padding:3px 12px;margin-left:8px}
+  .shot-body{padding:20px 22px}
+  .stage{background:linear-gradient(180deg,#F2F3EE,#EAECE4)}
+  .mock-note{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;background:var(--red-soft);color:#B4443E;border-radius:6px;padding:3px 9px;margin-bottom:10px}
+  .co{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--cobalt);color:#fff;font-family:var(--mono);font-weight:600;font-size:11px;flex:none;box-shadow:0 0 0 3px var(--cobalt-soft)}
+  .co.abs{position:absolute;z-index:3}
+  .guide-legend{list-style:none;margin:14px 0 0;padding:0}
+  .guide-legend li{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ink-soft);margin-bottom:7px}
+  .guide-legend li .co{margin-top:2px}
+  .input-mock{position:relative;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px 16px 12px;max-width:560px;margin:0 auto}
+  .input-mock .placeholder{color:#A6AAB6;font-size:14px;padding:4px 2px 12px}
+  .popover{position:relative;width:270px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(27,35,56,.16);padding:8px;z-index:2;margin:2px 0 16px 26px}
+  .popover::after{content:"";position:absolute;bottom:-7px;left:20px;width:12px;height:12px;background:#fff;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
+  .pop-row{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;font-size:13.5px;color:var(--ink);position:relative}
+  .pop-row.hot{background:var(--cobalt-soft)}
+  .pop-row .pi{width:20px;text-align:center;color:var(--gray);font-size:14px}
+  .input-row{display:flex;align-items:center;gap:10px;border-top:1px solid #EEF0EA;padding-top:10px;position:relative}
+  .icon-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:#F7F8F4;display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink-soft);position:relative}
+  .icon-btn.hot{border-color:var(--cobalt);box-shadow:0 0 0 3px var(--cobalt-soft)}
+  .send-btn{margin-left:auto;width:32px;height:32px;border-radius:9px;background:var(--ink);color:var(--marker);display:inline-flex;align-items:center;justify-content:center;font-size:15px;position:relative}
+  .model-chip{font-family:var(--mono);font-size:11.5px;color:var(--gray)}
+  .bubble{border-radius:12px;padding:13px 17px;font-size:13.5px;line-height:1.6;margin-bottom:13px;max-width:94%}
+  .bubble.user{background:var(--cobalt-soft);margin-left:auto;color:var(--ink)}
+  .bubble.claude{background:#F3F4EF;border:1px solid var(--line);color:var(--ink-soft)}
+  .bubble .who{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:5px}
+  .bubble h4{font-family:var(--display);font-size:13px;color:var(--ink);margin:7px 0 3px;text-transform:uppercase;letter-spacing:.04em}
+  .rag{font-family:var(--mono);font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;letter-spacing:.03em;background:var(--green-soft);color:var(--green);margin-left:6px}
+  .file-strip{display:flex;align-items:center;gap:10px;background:var(--green-soft);border:1px solid #BFE3D0;border-radius:9px;padding:9px 13px;font-size:13px;margin-top:12px}
+  .file-strip .ficon{font-family:var(--mono);font-weight:600;font-size:10.5px;background:var(--green);color:#fff;border-radius:5px;padding:3px 7px}
+  .file-strip.md .ficon{background:var(--cobalt)} .file-strip.md{background:var(--cobalt-soft);border-color:#C3D0FF}
+
+  /* app-mock (Skills rail / Cowork) */
+  .app-mock{display:grid;grid-template-columns:190px 1fr;min-height:250px}
+  .app-side{background:#141B2E;color:#B9C0D6;padding:15px 12px;font-size:13px}
+  .app-side .brand{font-family:var(--display);font-weight:700;color:#fff;font-size:14px;margin:2px 6px 14px;display:flex;align-items:center;gap:8px}
+  .app-side .brand .spark{width:14px;height:14px;border-radius:50%;background:var(--marker);box-shadow:0 0 0 3px rgba(255,222,89,.2)}
+  .side-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;margin-bottom:4px;position:relative}
+  .side-item .ic{width:15px;height:15px;border-radius:4px;background:#2A3350;flex:0 0 15px}
+  .side-item.hot{background:rgba(255,222,89,.16);color:#fff;font-weight:600;outline:1.5px solid var(--marker)}
+  .side-item.hot .ic{background:var(--marker)}
+  .side-sub{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6B7590;margin:14px 8px 6px}
+  .side-sess{padding:6px 10px;border-radius:8px;font-size:12px;color:#8C95AE}
+  .app-main{background:#FBFBF8;padding:20px 22px;position:relative}
+  .app-main h6{font-family:var(--display);font-size:16px;font-weight:700;margin:0 0 3px}
+  .app-main .sub{font-size:12.5px;color:var(--gray);margin-bottom:14px}
+  .field-label{font-size:12px;font-weight:600;color:var(--ink);margin:14px 0 6px;display:block}
+  .field{background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px 13px;font-size:13.5px;color:var(--ink)}
+  .field.ph{color:#A6AAB6}
+  .btn-fake{margin-top:16px;display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;border-radius:9px;padding:9px 16px;font-weight:600;font-size:13px}
+  .new-sess{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;border-radius:10px;padding:8px 15px;font-size:13px;font-weight:600;position:relative;box-shadow:0 0 0 3px var(--cobalt-soft)}
+  .folder-pick{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px dashed var(--line);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--ink-soft);margin-top:14px;max-width:420px;position:relative}
+  .seg-wrap{display:flex;justify-content:center;position:relative;margin:2px 0 14px}
+  .seg{display:inline-flex;background:#EDEFE9;border:1px solid var(--line);border-radius:999px;padding:3px;position:relative}
+  .seg-opt{padding:6px 18px;border-radius:999px;font-size:13px;color:var(--gray);font-weight:600}
+  .seg-opt.on{background:var(--ink);color:var(--marker)}
+
+  /* eval viewer mockup */
+  .ev{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0 6px;background:#fff;box-shadow:0 8px 24px rgba(27,35,56,.07)}
+  .ev-tabs{display:flex;gap:2px;background:#EDEFE9;padding:8px 12px 0;border-bottom:1px solid var(--line)}
+  .ev-tab{font-family:var(--mono);font-size:12px;padding:8px 15px;border-radius:9px 9px 0 0;color:var(--gray);background:transparent;font-weight:600}
+  .ev-tab.on{background:#fff;color:var(--ink);border:1px solid var(--line);border-bottom-color:#fff;margin-bottom:-1px}
+  .ev-body{padding:18px 20px}
+  .ev-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .ev-col h5{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:7px}
+  .ev-out{border:1px solid var(--line);border-radius:9px;padding:12px 14px;font-size:12.5px;color:var(--ink-soft);line-height:1.5;background:#FBFBF8;min-height:120px}
+  .ev-out.with{border-color:#BFE3D0;background:var(--green-soft)}
+  .ev-out .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;display:block;margin-bottom:6px}
+  .ev-out.with .lbl{color:var(--green)} .ev-out .lbl{color:var(--gray)}
+  .grades{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+  .grade{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;margin-bottom:5px;color:var(--ink-soft)}
+  .grade .mk{font-family:var(--mono);font-weight:700;flex:0 0 16px}
+  .grade.pass .mk{color:var(--green)} .grade.fail .mk{color:#B4443E}
+  .bench{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+  .bench th{background:var(--ink);color:#fff;font-family:var(--display);font-weight:600;font-size:12.5px;text-align:left;padding:10px 13px}
+  .bench td{padding:10px 13px;border-bottom:1px solid var(--line);color:var(--ink-soft)}
+  .bench tr:last-child td{border-bottom:none}
+  .bench .delta{font-family:var(--mono);font-weight:600}
+  .bench .up{color:var(--green)} .bench .flat{color:var(--gray)}
+  @media(max-width:720px){.ev-two{grid-template-columns:1fr}}
+
+  .writedown{background:var(--cobalt-soft);border-radius:10px;padding:11px 15px;font-size:14px;color:var(--ink);margin-top:14px}
+  .b-zone .writedown{background:var(--violet-soft)}
+  .checkpoint{background:var(--amber-soft);border:1px solid #EBD9AE;border-radius:10px;padding:12px 16px;font-size:14px;color:#6C5210;margin-top:14px}
+  .checkpoint .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:4px}
+  .checkpoint b{color:#4d3a08}
+
+  /* toolkit reference cards */
+  .tk{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-top:22px}
+  .tk-head{display:flex;align-items:center;gap:16px;padding:20px 26px;border-bottom:1px solid var(--line)}
+  .tk-ic{width:52px;height:52px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .tk-ic svg{width:30px;height:30px}
+  .tk.a1 .tk-ic{background:var(--cobalt-soft)} .tk.a2 .tk-ic{background:var(--green-soft)} .tk.a3 .tk-ic{background:var(--violet-soft)}
+  .tk-head h3{font-size:21px;margin:0}
+  .tk-head .tk-tl{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:2px}
+  .tk-body{padding:22px 26px 24px}
+  .tk-body > p{font-size:15.5px;color:var(--ink-soft);max-width:78ch;margin-bottom:16px}
+  .tk-diagram{background:#FBFBF7;border:1px solid var(--line);border-radius:12px;padding:16px;margin:6px 0 18px}
+  .tk-diagram figcaption{font-family:var(--mono);font-size:11.5px;color:var(--gray);text-align:center;margin-top:8px}
+  .tk-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+  .tk-two .box{border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.55}
+  .tk-two .good{background:var(--green-soft);color:#175C3D}
+  .tk-two .plain{background:#EEF0EA;color:var(--ink-soft)}
+  .tk-two .box b{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+  .tk-two .plain b{color:var(--gray)} .tk-two .good b{color:var(--green)}
+  .tk-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+  .tk-pill{font-family:var(--mono);font-size:11.5px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:6px 13px;color:var(--ink-soft)}
+  .tk-pill b{color:var(--ink)}
+  .tk-when{background:var(--marker-soft);border-radius:10px;padding:12px 16px;font-size:14.5px;color:var(--ink);margin-top:14px}
+  .tk-when b{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:3px}
+  .opt-badge{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;background:var(--violet-soft);color:var(--violet);border-radius:6px;padding:4px 10px;font-weight:600;margin-left:8px}
+  @media(max-width:820px){.tk-two{grid-template-columns:1fr}}
+
+  details.opt{margin:10px 0 4px;border:1px dashed var(--line);border-radius:10px;background:#FBFBF7}
+  details.opt summary{cursor:pointer;padding:10px 15px;font-size:13.5px;color:var(--gray);font-family:var(--mono)}
+  details.opt .inner{padding:0 15px 14px}
+  .rules-strip{background:var(--marker-soft);border:1px solid #EDD98A;border-radius:12px;padding:13px 18px;font-size:14.5px;color:var(--ink);margin-bottom:6px}
+
+  footer{padding:38px 0 54px;color:var(--gray);font-size:13px;font-family:var(--mono)}
+  footer .wrap{border-top:1px solid var(--line);padding-top:20px}
+
+  .b-zone{background:#F3EFF9}
+  .b-zone .eyebrow{color:var(--violet)}
+  .b-zone .new-sess{box-shadow:0 0 0 3px var(--violet-soft)}
+
+  @media(max-width:820px){
+    .crit-body{grid-template-columns:1fr}
+    .brief-wrap{grid-template-columns:1fr}
+    .app-mock{grid-template-columns:1fr}
+    .popover{margin-left:6px;max-width:100%}
+  }
+  @media print{header.hero{background:#fff;color:#000}nav.top{display:none}.shot,.code-win,.ev{box-shadow:none}}
+
+  /* ---- new components for the Cowork build guide ---- */
+  .folder-tree{background:#0F1524;border:1px solid #26304C;border-radius:12px;padding:18px 20px;font-family:var(--mono);font-size:13px;line-height:1.7;color:#C7D0E6;overflow-x:auto;margin:16px 0;white-space:pre-wrap;word-break:break-word}
+  .folder-tree .fdir{color:#7FB0FF;font-weight:600}
+  .folder-tree .ffile{color:#EAECF3}
+  .folder-tree .fnote{color:#6E7A97}
+  .folder-tree .fhi{color:var(--marker)}
+  .dl-card{display:flex;align-items:center;gap:16px;background:var(--cobalt-soft);border:1px solid #C3D0FF;border-radius:12px;padding:16px 18px;margin:16px 0}
+  .dl-card .dl-ic{flex:0 0 44px;width:44px;height:44px;border-radius:10px;background:var(--cobalt);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:600}
+  .dl-card .dl-body{flex:1}
+  .dl-card .dl-body b{font-family:var(--display);font-size:15px;color:var(--ink)}
+  .dl-card .dl-body p{font-size:13.5px;color:var(--ink-soft);margin-top:2px}
+  .dl-card .dl-tag{font-family:var(--mono);font-size:11px;color:var(--cobalt);border:1px solid var(--cobalt);border-radius:999px;padding:4px 10px;white-space:nowrap}
+  .think{background:var(--marker-soft);border:1px solid #F0DE8E;border-radius:10px;padding:14px 16px;margin:14px 0;font-size:14.5px;color:#5B4A12}
+  .think b{color:#7A6410;display:block;margin-bottom:4px;font-family:var(--display)}
+  .stepflow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:20px 0 4px;font-family:var(--mono);font-size:12px}
+  .stepflow .sf{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px;color:var(--ink-soft)}
+  .stepflow .sf.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stepflow .sfar{color:var(--gray)}
+  .track-band{border-radius:var(--radius);padding:2px 0}
+  .band-a{border-left:5px solid var(--cobalt);padding-left:22px}
+  .band-b{border-left:5px solid var(--green);padding-left:22px}
+  .band-c{border-left:5px solid var(--violet);padding-left:22px}
+  nav.top a.nc{color:var(--green)}
+
+
+  /* ---- Track A real-screenshot sub-steps ---- */
+  .substep{margin:24px 0}
+  .substep-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .substep-h .sl{flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:var(--cobalt);color:#fff;font-family:var(--mono);font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center}
+  .substep-h h4{font-family:var(--display);font-size:15.5px;margin:0;color:var(--ink)}
+  .substep-body{margin-left:40px}
+  @media(max-width:600px){.substep-body{margin-left:0}}
+  .substep-body>p{color:var(--ink-soft);font-size:14.5px;margin:0 0 8px}
+  .vid-grid{display:grid;gap:22px;grid-template-columns:1fr;margin:18px 0;max-width:820px}
+  .vid-grid.one{max-width:820px}
+  .vid{margin:0}
+  .vid-lbl{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--cobalt);font-weight:600;margin-bottom:9px}
+  .vid-lbl .pl{flex:0 0 22px;width:22px;height:22px;border-radius:50%;background:var(--cobalt);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px}
+  .vid-frame{position:relative;width:100%;padding-top:56.25%;border-radius:12px;overflow:hidden;border:1px solid #d9ddd0;background:#000;box-shadow:0 6px 20px rgba(27,35,56,.10)}
+  .vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .screenshot{margin:10px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0b0b0d;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .screenshot img{display:block;width:100%;height:auto}
+  .screenshot figcaption{font-size:12.5px;color:var(--gray);padding:9px 14px;background:var(--card);border-top:1px solid var(--line);line-height:1.5}
+  .real-tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--green);border:1px solid var(--green);border-radius:999px;padding:2px 8px;margin-right:8px;vertical-align:middle}
+  .perm{background:var(--amber-soft);border:1px solid #EBD9A8;border-radius:10px;padding:11px 14px;margin:10px 0;font-size:13.5px;color:#6B531A;line-height:1.55}
+  .perm b{color:#5A4413}
+  .code-body .cmt{color:#7E8AA6;font-style:italic}
+  .solpoint{display:flex;gap:10px;align-items:flex-start;background:var(--violet-soft);border:1px solid #D9C6F2;border-radius:10px;padding:12px 15px;margin:12px 0;font-size:14px;color:#4A2E77}
+  .solpoint b{color:#3C2463}
+  .solpoint a{color:var(--violet);font-weight:600}
+  /* ---- appendix frameworks ---- */
+  .fw{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;margin:18px 0}
+  .fw > h3{font-family:var(--display);font-size:19px;margin-bottom:2px}
+  .fw .fw-sub{color:var(--gray);font-size:13.5px;margin-bottom:14px}
+  .fw-move{display:flex;gap:14px;padding:14px 0;border-top:1px dashed var(--line)}
+  .fw-move:first-of-type{border-top:none;padding-top:2px}
+  .fw-move .fw-n{flex:0 0 30px;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-family:var(--mono);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
+  .fw-move .fw-b{flex:1}
+  .fw-move .fw-b b{font-family:var(--display);font-size:15px;color:var(--ink)}
+  .fw-move .fw-b p{color:var(--ink-soft);font-size:14px;margin-top:3px}
+  .fw-move .fw-b .map{font-family:var(--mono);font-size:12px;color:var(--cobalt);margin-top:6px}
+  .fmgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0 4px}
+  @media(max-width:640px){.fmgrid{grid-template-columns:1fr}}
+  .fmcard{border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:var(--paper)}
+  .fmcard .trap{font-family:var(--display);font-size:14px;color:#B4443E}
+  .fmcard .resp{font-size:13px;color:var(--ink-soft);margin-top:4px;line-height:1.5}
+  .fmcard .resp b{color:var(--ink)}
+  .exit{background:var(--green-soft);border:1px solid #BCE3CC;border-radius:10px;padding:14px 16px;margin:14px 0;font-size:14px;color:#14562F}
+  .exit b{color:#0E3E22;display:block;margin-bottom:4px;font-family:var(--display)}
+  .objective{display:flex;gap:14px;align-items:flex-start;background:var(--ink);color:#EDEFF6;border-radius:12px;padding:16px 20px;margin:18px 0 4px;font-size:15px;line-height:1.6}
+  .objective .olab{flex:0 0 auto;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--marker);border:1px solid rgba(255,222,89,.5);border-radius:999px;padding:3px 10px;margin-top:1px}
+  a.dl-card{text-decoration:none;color:inherit;cursor:pointer;transition:border-color .15s, box-shadow .15s}
+  a.dl-card:hover{border-color:var(--cobalt);box-shadow:0 2px 10px rgba(45,91,255,.12)}
+  .setup{display:flex;gap:12px;align-items:flex-start;background:var(--cobalt-soft);border:1px solid #C3D0FF;border-radius:12px;padding:14px 18px;margin:12px 0 4px;font-size:14.5px;color:#22336b;line-height:1.6}
+  .setup .slab{flex:0 0 auto;font-size:18px;line-height:1.3}
+  .setup b{color:#152451}
+  .setup a{color:var(--cobalt);font-weight:600}
+</style>
+<style>
+  /* ---- extra components for the MCP lab (reuses base tokens) ---- */
+  .conn-tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;border-radius:6px;padding:4px 10px;font-weight:600}
+  .conn-notion{background:#ECEBE7;color:#2b2a28}
+  .conn-airtable{background:var(--cobalt-soft);color:var(--cobalt)}
+  .conn-desktop{background:var(--ink);color:var(--marker)}
+  .qbank{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:16px;margin-top:20px}
+  .qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px}
+  .qcard h4{font-family:var(--display);font-size:15px;margin-bottom:4px}
+  .qcard .qk{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--cobalt);margin-bottom:10px;display:block}
+  .qcard ul{list-style:none;margin:0;padding:0}
+  .qcard li{position:relative;padding-left:20px;margin-bottom:9px;font-size:14px;color:var(--ink-soft);line-height:1.5}
+  .qcard li::before{content:"“";position:absolute;left:0;top:-2px;color:var(--cobalt);font-weight:700;font-size:16px}
+  .check-panel{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--green);border-radius:var(--radius);padding:20px 24px;margin-top:16px}
+  .check-panel h4{font-family:var(--display);font-size:16px;margin-bottom:4px}
+  .check-panel .cp-sub{font-size:13.5px;color:var(--gray);margin-bottom:14px}
+  .fact-row{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:baseline;padding:9px 0;border-top:1px dashed var(--line);font-size:14px;color:var(--ink-soft)}
+  .fact-row:first-of-type{border-top:none}
+  .fact-row .fv{font-family:var(--mono);font-weight:600;color:var(--ink);white-space:nowrap}
+  .facil-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);border:1px solid var(--green);border-radius:999px;padding:3px 10px;display:inline-block;margin-bottom:10px}
+  .role-strip{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .role-chip{font-family:var(--mono);font-size:12px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:6px 13px;color:var(--ink-soft)}
+  .role-chip b{color:var(--ink)}
+  .band-mcp{border-left:5px solid var(--cobalt);padding-left:22px}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Module 2 · Agent Fundamentals &nbsp;·&nbsp; Session 08 · Agent MCP &nbsp;·&nbsp; Hands-on connect</div>
+    <h1>Connect Claude to Live Business Systems with MCP</h1>
+    <p class="sub">Load a synthetic client CRM into <strong style="color:#fff;">Notion</strong> and <strong style="color:#fff;">Airtable</strong>, connect the <strong style="color:#fff;">Claude Desktop app</strong> to both through <strong style="color:#fff;">MCP connectors</strong>, then ask plain-English questions and check the answers against the raw records. By the end you'll see MCP for what it is — the <strong style="color:#fff;">USB port</strong> that lets an agent reach the systems your business already runs on.</p>
+    <div class="crumbs">
+      <span>🗂 Notion + Airtable</span>
+      <span>🤖 Claude Desktop</span>
+      <span>🔌 MCP connectors</span>
+      <span>📥 Synthetic CRM included</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ STICKY NAV ============ -->
+<nav class="top">
+  <div class="wrap">
+    <a href="#scenario" class="na">1 · The Scenario</a>
+    <a href="#mcp" class="na">2 · Claude MCP</a>
+    <a href="#activity" class="na">3 · The Activity</a>
+    <a href="#debrief">4 · Debrief</a>
+    <a href="#appendix">Appendix · Question bank</a>
+  </div>
+</nav>
+
+<!-- ============ SECTION 1 · THE SCENARIO ============ -->
+<section id="scenario">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Section 01 · The Scenario</div>
+      <h2>What you're building, and how you'll judge it</h2>
+      <p>A controlled connect: <strong>one synthetic CRM, two live systems, one agent</strong>. You'll put the same 20-lead dataset into Notion and Airtable, wire Claude Desktop to both over MCP, and then ask the kinds of questions a sales lead asks every week — <em>which deals are stuck, summarise the notes for one client, draft a follow-up plan</em>. The point isn't the answer; it's that the answer comes from <strong>live records you can verify</strong>, not from anything you pasted into the chat.</p>
+    </div>
+
+    <div class="card definition">
+      <p>You'll connect <strong>both systems</strong> to the Claude Desktop app, ask a shared set of natural-language questions, and then <strong>check every answer against the raw data</strong>. When the answer matches the records, you've felt what MCP does; when it doesn't, you've found exactly where an agent needs guardrails. That verification loop — ask, then compare — is the whole exercise.</p>
+    </div>
+
+    <!-- setting / personas -->
+    <div class="sec-head" style="margin-top:44px;">
+      <div class="eyebrow">The setting · fictional, safe to reuse</div>
+      <h2 style="font-size:26px;">Harbourstone Consulting — and you're Dana</h2>
+    </div>
+    <div class="brief-wrap">
+      <div class="persona-grid" style="grid-template-columns:1fr;margin-top:0;">
+        <div class="persona">
+          <div class="avatar av-d">DO</div>
+          <div>
+            <div class="who">Dana Osei — that's you</div>
+            <div class="role">Consultant · now running the Retail &amp; Consumer pod's pipeline</div>
+            <p>You inherited the pod's pipeline this quarter — twenty open and recent deals spread across Notion (where the team writes call notes) and Airtable (where deal stages and values live). Every Monday you rebuild the same picture by hand: what's stuck, what's slipping, whose deal is whose. You don't need help thinking about the deals; you need to stop stitching two tools together in your head.</p>
+          </div>
+        </div>
+        <div class="persona">
+          <div class="avatar av-r">RM</div>
+          <div>
+            <div class="who">Raj Malhotra</div>
+            <div class="role">Engagement Manager · runs the Monday pipeline standup</div>
+            <p>Raj opens every standup with the same three questions: <em>"Which deals are stuck?" "What's the story on Riverstone?" "What's our follow-up plan this week?"</em> Today you're going to answer those questions by asking Claude — connected straight to Notion and Airtable — and then <strong>prove the answers against the records</strong> before you trust them. Raj cares about the numbers being right, not where they came from.</p>
+          </div>
+        </div>
+      </div>
+      <div class="client-card">
+        <h3>Harbourstone Consulting</h3>
+        <div class="cc-sub">The organisation</div>
+        <div class="fact"><span class="fk">Size</span><span>~180 people across Toronto, Chicago &amp; London — tripled from 60 after a growth-equity deal.</span></div>
+        <div class="fact"><span class="fk">The pain</span><span>Deal data is split across tools. Notes live in Notion, stages and values in Airtable; nobody has the whole picture in one place.</span></div>
+        <div class="fact"><span class="fk">The initiative</span><span>The COO's "Ways of Working" pilot: let an agent read the live systems directly instead of exporting and re-keying.</span></div>
+        <div class="fact"><span class="fk">Your job</span><span>Load the CRM → connect Claude to both systems over MCP → ask, then verify against the raw records.</span></div>
+        <div class="fict-note">All names, companies &amp; deals are fictional — for workshop use</div>
+      </div>
+    </div>
+
+    <div class="objective"><span class="olab">Objective</span><div>Connect the Claude Desktop app to a live Notion workspace and Airtable base through <strong>MCP connectors</strong>, ask natural-language questions of a synthetic client CRM, and <strong>verify the answers against the raw data</strong>. By the end you can wire an agent to the business systems you already use, ask questions across them in plain English, and judge when to trust the answer.</div></div>
+
+    <div class="setup"><span class="slab">🖥️</span><div><b>Before you start.</b> Every step in this activity is performed in the <strong>Claude Desktop App</strong>. If you don&rsquo;t have it yet, download it from the official page &mdash; <a href="https://claude.ai/download" target="_blank" rel="noopener">claude.ai/download</a> (Windows &amp; macOS). Once it&rsquo;s installed, <strong>sign in with your MICA Claude credentials</strong>. You&rsquo;ll also need a Notion account and an Airtable account you can log into during the session.</div></div>
+
+    <!-- the two systems -->
+    <h3 style="margin-top:44px;">The two systems you'll connect</h3>
+    <p style="color:var(--ink-soft);max-width:74ch;margin-top:8px;">The same CRM lives in both tools, split the way a real team splits it. Connecting <strong>both</strong> is deliberate: it lets you ask questions that only make sense when the agent can reach across systems.</p>
+    <div class="grid-3">
+      <div class="toolcard">
+        <span class="conn-tag conn-notion">Notion</span>
+        <p><strong>The notes.</strong> A database of the 20 leads where each record carries the qualitative story — the call notes, the blockers, who the real decision-maker is. This is where "summarise the notes for Client X" gets answered.</p>
+      </div>
+      <div class="toolcard">
+        <span class="conn-tag conn-airtable">Airtable</span>
+        <p><strong>The numbers.</strong> The same 20 leads as a base with deal stage, value, probability, owner and next-step dates. This is where "which deals are stuck" and "what's my pipeline worth" get answered.</p>
+      </div>
+      <div class="toolcard">
+        <span class="conn-tag conn-desktop">Claude Desktop</span>
+        <p><strong>The agent.</strong> Once both connectors are added, Claude can read the workspace and the base directly — no exports, no pasting. You ask; it goes and looks.</p>
+      </div>
+    </div>
+
+    <!-- criteria -->
+    <h3 style="margin-top:44px;">How you'll judge each answer — three checks</h3>
+    <p style="color:var(--ink-soft);max-width:74ch;margin-top:8px;">After each question, don't just read the answer — test it. Every answer earns a yes/no on three checks, each backed by one line pointing at the record. These separate an answer that <em>sounds</em> right from one that <em>is</em> right.</p>
+
+    <div class="crit rec">
+      <div class="crit-head"><span class="crit-letter">A</span><h3>Accuracy</h3>
+        <span class="crit-q">"Take one fact from the answer. Open the record. Does it match — exactly?"</span></div>
+      <div class="crit-body">
+        <div>
+          <h4>In plain language</h4>
+          <p>Accuracy is <strong>whether every figure and claim in the answer traces back to a real record</strong>. A deal value, a stage, an owner name, a due date — each should be checkable against Airtable or Notion. If a number appears that isn't in the data, the agent invented it, and that's the single most important thing to catch.</p>
+          <div class="ex bad"><b>Inaccurate</b>States a pipeline total that doesn't add up, or names an owner the record doesn't list, or rounds a value "helpfully."</div>
+          <div class="ex good"><b>Accurate</b>Every value, stage and name matches the source record when you open it.</div>
+        </div>
+        <div>
+          <h4>Scoring anchors</h4>
+          <ul class="scale">
+            <li><span class="n">1</span>Contains a figure or claim not found in either system.</li>
+            <li><span class="n">3</span>Mostly right, but one value or name is off.</li>
+            <li><span class="n">5</span>Every fact checks out against the record.</li>
+          </ul>
+          <div class="evidence"><b>Evidence to write down</b>The one fact you spot-checked, and the record you checked it against.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="crit str">
+      <div class="crit-head"><span class="crit-letter">C</span><h3>Completeness</h3>
+        <span class="crit-q">"Did it use both systems when it should have — or answer from only half the picture?"</span></div>
+      <div class="crit-body">
+        <div>
+          <h4>In plain language</h4>
+          <p>Completeness is <strong>whether the answer draws on all the data the question needs</strong>. "Which deals are stuck?" needs the stages from Airtable <em>and</em> the blocker notes from Notion. An answer built from one tool alone may be accurate as far as it goes and still miss half the story.</p>
+          <div class="ex bad"><b>Partial</b>Lists Negotiation-stage deals from Airtable but ignores the notes explaining <em>why</em> they're stuck.</div>
+          <div class="ex good"><b>Complete</b>Cross-references stage, dates and the note to say which deals are stuck and what's blocking each.</div>
+        </div>
+        <div>
+          <h4>Scoring anchors</h4>
+          <ul class="scale">
+            <li><span class="n">1</span>Answers from one system when the question needs both.</li>
+            <li><span class="n">3</span>Uses both but misses records that fit the ask.</li>
+            <li><span class="n">5</span>Pulls every relevant record from both systems.</li>
+          </ul>
+          <div class="evidence"><b>Evidence to write down</b>Any record you know fits the question that the answer left out.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="crit del">
+      <div class="crit-head"><span class="crit-letter">T</span><h3>Traceability</h3>
+        <span class="crit-q">"Can you get from a line in the answer back to the exact record it came from?"</span></div>
+      <div class="crit-body">
+        <div>
+          <h4>In plain language</h4>
+          <p>Traceability is <strong>whether the answer tells you where each claim came from</strong> — a company name, a lead ID, a field. An agent you can trust makes its sources findable, so verifying takes seconds, not a full re-audit. This is what makes the "compare" step fast enough to actually do.</p>
+          <div class="ex bad"><b>Opaque</b>A confident summary with no company names or IDs — you can't check it without re-reading everything.</div>
+          <div class="ex good"><b>Traceable</b>Each point names the deal (or lead ID) it rests on, so you can open that one record and confirm.</div>
+        </div>
+        <div>
+          <h4>Scoring anchors</h4>
+          <ul class="scale">
+            <li><span class="n">1</span>No sources; unverifiable without redoing the work.</li>
+            <li><span class="n">3</span>Some points sourced, others floating.</li>
+            <li><span class="n">5</span>Every claim ties to a named record you can open.</li>
+          </ul>
+          <div class="evidence"><b>Evidence to write down</b>How long it took to verify one claim. Under 20 seconds is the goal.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 2 · CLAUDE MCP ============ -->
+<section id="mcp">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Section 02 · Claude MCP</div>
+      <h2>MCP is the USB port for agents</h2>
+      <p>Before you connect anything, get the one idea that makes the rest obvious. <strong>MCP — the Model Context Protocol — is a standard plug.</strong> It lets an agent reach a live business system the same way a USB port lets a laptop reach any device: one shape of socket, and everything that speaks it just works.</p>
+    </div>
+
+    <!-- CARD 1 · the USB port idea -->
+    <div class="tk a1">
+      <div class="tk-head">
+        <div class="tk-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#2D5BFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="8" rx="1"/><path d="M12 10v9"/><path d="M9 13l3-3 3 3"/><circle cx="12" cy="21" r="1"/></svg></div>
+        <div><h3>The USB port, not the cable soup</h3><div class="tk-tl">One standard plug for many systems</div></div>
+      </div>
+      <div class="tk-body">
+        <p>Before USB, every device needed its own port and its own driver. MCP does for agents what USB did for hardware: instead of a bespoke integration per tool, there's <strong>one protocol</strong>. Claude speaks MCP; a <strong>connector</strong> is the cable; Notion and Airtable are the <strong>devices</strong> on the other end. Plug them in and the agent can read them — no custom code per system.</p>
+
+        <figure class="tk-diagram">
+          <svg viewBox="0 0 720 176" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MCP as a USB port connecting Claude to Notion and Airtable">
+            <g font-family="Inter, sans-serif" font-size="12.5">
+              <rect x="14" y="66" width="150" height="44" rx="10" fill="#1B2338"/>
+              <text x="34" y="86" fill="#fff" font-weight="600">Claude Desktop</text>
+              <text x="34" y="102" fill="#C9A8F2" font-size="11">the agent</text>
+              <rect x="238" y="66" width="150" height="44" rx="10" fill="#E9EEFF" stroke="#2D5BFF" stroke-width="1.2"/>
+              <text x="258" y="86" fill="#1B2338" font-weight="600">MCP connector</text>
+              <text x="258" y="102" fill="#5d7079" font-size="11">the standard plug</text>
+              <rect x="466" y="24" width="220" height="44" rx="10" fill="#ECEBE7" stroke="#8a887f" stroke-width="1.2"/>
+              <text x="486" y="44" fill="#1B2338" font-weight="600">Notion workspace</text>
+              <text x="486" y="60" fill="#5d7079" font-size="11">the notes</text>
+              <rect x="466" y="108" width="220" height="44" rx="10" fill="#E9EEFF" stroke="#2D5BFF" stroke-width="1.2"/>
+              <text x="486" y="128" fill="#1B2338" font-weight="600">Airtable base</text>
+              <text x="486" y="144" fill="#5d7079" font-size="11">the numbers</text>
+            </g>
+            <g stroke="#8aa6a4" stroke-width="1.6" fill="none">
+              <defs><marker id="arru" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8aa6a4"/></marker></defs>
+              <line x1="164" y1="88" x2="234" y2="88" marker-end="url(#arru)"/>
+              <path d="M388 88 L420 88 L420 46 L462 46" marker-end="url(#arru)"/>
+              <path d="M388 88 L420 88 L420 130 L462 130" marker-end="url(#arru)"/>
+            </g>
+          </svg>
+          <figcaption>One plug, many devices: the agent speaks MCP; each connector reaches a different live system</figcaption>
+        </figure>
+
+        <div class="tk-when"><b>The one idea</b>You don't teach Claude about Notion or Airtable. You give it a <strong>connector</strong>, and because both sides speak the same protocol, it can read the live system as it stands right now.</div>
+      </div>
+    </div>
+
+    <!-- CARD 2 · how the round trip works -->
+    <div class="tk a2">
+      <div class="tk-head">
+        <div class="tk-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1E8E5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 8-8V2l4 3-4 3V6a6 6 0 1 0 6 6"/></svg></div>
+        <div><h3>What happens when you ask</h3><div class="tk-tl">Question → connector → live system → grounded answer</div></div>
+      </div>
+      <div class="tk-body">
+        <p>When you ask "which deals are stuck?", Claude doesn't answer from memory. It uses the connector to <strong>query the live base and workspace</strong>, pulls the matching records, and builds the answer from what's actually there. Change a stage in Airtable and ask again — the answer changes too. That's the difference between an agent that <em>reaches</em> your systems and one that only ever saw a snapshot.</p>
+
+        <figure class="tk-diagram">
+          <svg viewBox="0 0 720 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The ask and answer round trip through MCP">
+            <defs><marker id="arrb2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8aa6a4"/></marker></defs>
+            <g font-family="Inter, sans-serif" font-size="12" text-anchor="middle">
+              <rect x="12" y="54" width="120" height="42" rx="10" fill="#E4F4EC" stroke="#1E8E5A" stroke-width="1.2"/><text x="72" y="72" fill="#1B2338" font-weight="600">You ask</text><text x="72" y="88" fill="#5d7079" font-size="10.5">plain English</text>
+              <rect x="158" y="54" width="120" height="42" rx="10" fill="#fff" stroke="#5d7079" stroke-width="1.1"/><text x="218" y="72" fill="#1B2338" font-weight="600">Claude</text><text x="218" y="88" fill="#5d7079" font-size="10.5">plans the query</text>
+              <rect x="304" y="54" width="120" height="42" rx="10" fill="#E9EEFF" stroke="#2D5BFF" stroke-width="1.2"/><text x="364" y="72" fill="#1B2338" font-weight="600">MCP connector</text><text x="364" y="88" fill="#5d7079" font-size="10.5">reaches the system</text>
+              <rect x="450" y="54" width="120" height="42" rx="10" fill="#fff" stroke="#5d7079" stroke-width="1.1"/><text x="510" y="72" fill="#1B2338" font-weight="600">Live records</text><text x="510" y="88" fill="#5d7079" font-size="10.5">Notion + Airtable</text>
+              <rect x="596" y="54" width="112" height="42" rx="10" fill="#1B2338"/><text x="652" y="72" fill="#fff" font-weight="600">Grounded</text><text x="652" y="88" fill="#7fc4c0" font-size="10.5">answer back</text>
+            </g>
+            <g stroke="#8aa6a4" stroke-width="1.6" fill="none">
+              <line x1="132" y1="75" x2="154" y2="75" marker-end="url(#arrb2)"/>
+              <line x1="278" y1="75" x2="300" y2="75" marker-end="url(#arrb2)"/>
+              <line x1="424" y1="75" x2="446" y2="75" marker-end="url(#arrb2)"/>
+              <line x1="570" y1="75" x2="592" y2="75" marker-end="url(#arrb2)"/>
+            </g>
+          </svg>
+          <figcaption>The answer is only as current as the systems it reads — which is the whole point</figcaption>
+        </figure>
+
+        <div class="tk-two">
+          <div class="box plain"><b>Without MCP</b>You export a CSV, paste it into the chat, and the agent reasons over a frozen copy that's stale the moment a teammate updates a deal.</div>
+          <div class="box good"><b>With MCP</b>The agent queries the live workspace and base each time you ask, so the answer reflects the data as it is right now.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 3 · why it matters -->
+    <div class="tk a3">
+      <div class="tk-head">
+        <div class="tk-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#7A3FD1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div>
+        <div><h3>Why this is the unlock</h3><div class="tk-tl">Agents become useful when they can reach live systems</div></div>
+      </div>
+      <div class="tk-body">
+        <p>A chatbot that only knows what you type is a clever notepad. An agent that can <strong>reach the systems your business runs on</strong> — its CRM, its docs, its tickets — can answer questions about the real state of the work. MCP is the piece that turns the first into the second. Today's CRM is the example; the same plug reaches your calendar, your codebase, your data warehouse.</p>
+        <div class="tk-when"><b>Keep it in view</b>Connectors read (and sometimes write to) real systems. That power is exactly why the <strong>verify-against-the-record</strong> habit you practise in Step 4 matters — trust, but check.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 3 · THE ACTIVITY ============ -->
+<section id="activity">
+  <div class="wrap band-mcp">
+    <div class="sec-head">
+      <div class="eyebrow">Section 03 · The Activity</div>
+      <h2>Load, connect, ask, compare</h2>
+      <p>Five steps take you from two empty tools to an agent answering pipeline questions you can verify. Go in order — each step sets up the next.</p>
+    </div>
+    <div class="stepflow">
+      <span class="sf on">1 · Load the data</span><span class="sfar">→</span>
+      <span class="sf">2 · Connect via MCP</span><span class="sfar">→</span>
+      <span class="sf">3 · Ask in plain English</span><span class="sfar">→</span>
+      <span class="sf">4 · Compare to the raw data</span><span class="sfar">→</span>
+      <span class="sf">5 · Debrief</span>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="step">
+      <div class="step-head"><span class="step-no">STEP 1</span><div><h3>Load the synthetic CRM into Notion and Airtable</h3><p>Import the same 20 leads into both tools — notes in Notion, numbers in Airtable</p></div></div>
+      <div class="step-body">
+        <p style="color:var(--ink-soft);margin-bottom:6px;">Download the two CSVs below. They hold the identical dataset — 20 leads with contacts, deal stages, values, owners and free-text notes — formatted for a one-click import into each tool.</p>
+
+        <a class="dl-card" href="harbourstone-crm-airtable.csv" download>
+          <div class="dl-ic">CSV</div>
+          <div class="dl-body"><b>harbourstone-crm-airtable.csv</b><p>The Airtable version — <code>Lead ID</code> first, deal stage, value, owner, dates and notes. 20 rows, ready to import as a new base.</p></div>
+          <span class="dl-tag">↓ download</span>
+        </a>
+        <a class="dl-card" href="harbourstone-crm-notion.csv" download>
+          <div class="dl-ic" style="background:#8a887f;">CSV</div>
+          <div class="dl-body"><b>harbourstone-crm-notion.csv</b><p>The Notion version — <code>Company</code> first (Notion uses it as the page title). Same 20 leads, same fields, imports straight into a Notion database.</p></div>
+          <span class="dl-tag">↓ download</span>
+        </a>
+
+        <div class="substep">
+          <div class="substep-h"><span class="sl">1a</span><h4>Import into Airtable</h4></div>
+          <div class="substep-body">
+            <p>In Airtable, create a new base, then <strong>Add / Import → CSV file</strong> and choose <code>harbourstone-crm-airtable.csv</code>. Let Airtable create the table. Check that <strong>Deal Value</strong> reads as a number and <strong>Deal Stage</strong> as text (or convert it to a single-select for nicer filtering). Name the base <code>Harbourstone CRM</code>.</p>
+            <div class="vid-grid">
+              <div class="vid">
+                <div class="vid-lbl"><span class="pl">▶</span>Watch · Log in to Airtable</div>
+                <div class="vid-frame"><iframe src="https://player.vimeo.com/video/1216936181?title=0&amp;byline=0&amp;portrait=0" allow="fullscreen; picture-in-picture" allowfullscreen title="Log in to Airtable"></iframe></div>
+              </div>
+              <div class="vid">
+                <div class="vid-lbl"><span class="pl">▶</span>Watch · Import the data into Airtable</div>
+                <div class="vid-frame"><iframe src="https://player.vimeo.com/video/1216936182?title=0&amp;byline=0&amp;portrait=0" allow="fullscreen; picture-in-picture" allowfullscreen title="Import data into Airtable"></iframe></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="substep">
+          <div class="substep-h"><span class="sl">1b</span><h4>Import into Notion</h4></div>
+          <div class="substep-body">
+            <p>In Notion, create a page, then <strong>Import → CSV</strong> and choose <code>harbourstone-crm-notion.csv</code>. Notion builds a database with <strong>Company</strong> as the title. Open one record to confirm the <strong>Notes</strong> field carries the full call story. Name the database <code>Harbourstone CRM — Notes</code>.</p>
+            <div class="vid-grid">
+              <div class="vid">
+                <div class="vid-lbl"><span class="pl">▶</span>Watch · Log in to Notion</div>
+                <div class="vid-frame"><iframe src="https://player.vimeo.com/video/1216936422?title=0&amp;byline=0&amp;portrait=0" allow="fullscreen; picture-in-picture" allowfullscreen title="Log in to Notion"></iframe></div>
+              </div>
+              <div class="vid">
+                <div class="vid-lbl"><span class="pl">▶</span>Watch · Import the data into Notion</div>
+                <div class="vid-frame"><iframe src="https://player.vimeo.com/video/1216936307?title=0&amp;byline=0&amp;portrait=0" allow="fullscreen; picture-in-picture" allowfullscreen title="Import data into Notion"></iframe></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip">🗂 <strong>Same data, split on purpose.</strong> Both files hold all 20 leads. The split — notes-in-Notion, numbers-in-Airtable — is what makes the cross-system questions in Step 3 meaningful.</div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step">
+      <div class="step-head"><span class="step-no">STEP 2</span><div><h3>Connect Claude Desktop to both systems over MCP</h3><p>Add the Notion connector and the Airtable connector, then authorize each</p></div></div>
+      <div class="step-body">
+        <p style="color:var(--ink-soft);margin-bottom:6px;">This is the core of the session: <strong>you plug the agent into the live systems.</strong> In the Claude Desktop app, open <strong>Settings → Connectors</strong> (labels may differ slightly by version).</p>
+
+        <div class="substep">
+          <div class="substep-h"><span class="sl">2a</span><h4>Add the Notion connector</h4></div>
+          <div class="substep-body">
+            <p>Find <strong>Notion</strong> in the connector directory and add it. You'll be sent to Notion to <strong>authorize access</strong> — grant it to the workspace containing <code>Harbourstone CRM — Notes</code>. Approve only the access you need; you can revoke it later.</p>
+            <div class="vid-grid one">
+              <div class="vid">
+                <div class="vid-lbl"><span class="pl">▶</span>Watch · Add the Notion connector</div>
+                <div class="vid-frame"><iframe src="https://player.vimeo.com/video/1216936180?title=0&amp;byline=0&amp;portrait=0" allow="fullscreen; picture-in-picture" allowfullscreen title="Add the Notion connector"></iframe></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="substep">
+          <div class="substep-h"><span class="sl">2b</span><h4>Add the Airtable connector</h4></div>
+          <div class="substep-body">
+            <p>Add <strong>Airtable</strong> the same way and authorize access to the <code>Harbourstone CRM</code> base. If your build lists it under a custom / remote connector, paste the server URL your facilitator provides.</p>
+            <div class="vid-grid one">
+              <div class="vid">
+                <div class="vid-lbl"><span class="pl">▶</span>Watch · Add the Airtable connector</div>
+                <div class="vid-frame"><iframe src="https://player.vimeo.com/video/1216936183?title=0&amp;byline=0&amp;portrait=0" allow="fullscreen; picture-in-picture" allowfullscreen title="Add the Airtable connector"></iframe></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="substep">
+          <div class="substep-h"><span class="sl">2c</span><h4>Confirm both are live</h4></div>
+          <div class="substep-body">
+            <p>Back in the composer, ask a warm-up that forces a real read of each system:</p>
+            <div class="prompt-box simple"><span class="lbl">Confirm the connection</span>"List the connectors you can use right now. Then, using them, tell me how many records are in the Harbourstone CRM base in Airtable and how many are in the Notes database in Notion."</div>
+            <p>If Claude reports <strong>20 in each</strong>, both connectors are working. If a number is off, re-check the import in Step 1 before moving on.</p>
+          </div>
+        </div>
+
+        <div class="perm"><b>What this permission is:</b> the connector lets Claude read (and, depending on scope, edit) the workspace and base you authorized — needed so it can answer from the live data. Grant the narrowest access that works, and revoke it when the session ends.</div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step">
+      <div class="step-head"><span class="step-no">STEP 3</span><div><h3>Ask the pipeline questions in plain English</h3><p>Run Raj's three standup questions — and let the agent reach across both systems</p></div></div>
+      <div class="step-body">
+        <p style="color:var(--ink-soft);margin-bottom:6px;">Now ask the questions a sales lead actually asks. Notice which ones need <strong>Airtable alone</strong>, which need <strong>Notion alone</strong>, and which force the agent to <strong>join both</strong>.</p>
+
+        <div class="vid-grid one">
+          <div class="vid">
+            <div class="vid-lbl"><span class="pl">▶</span>Watch · Ask the pipeline questions in English</div>
+            <div class="vid-frame"><iframe src="https://player.vimeo.com/video/1216936431?title=0&amp;byline=0&amp;portrait=0" allow="fullscreen; picture-in-picture" allowfullscreen title="Ask the pipeline questions in plain English"></iframe></div>
+          </div>
+        </div>
+
+        <div class="prompt-box"><span class="lbl">Q1 · retrieve + reason (both systems)</span>"Using the Airtable base and the Notion notes, which deals are stuck? For each, give the company, its deal stage, and the specific blocker from the notes."</div>
+
+        <div class="prompt-box"><span class="lbl">Q2 · summarise (Notion)</span>"Summarise all the notes for Riverstone Health Systems. What's the state of the deal, and what's holding it up?"</div>
+
+        <div class="prompt-box"><span class="lbl">Q3 · plan (both systems)</span>"Draft a follow-up plan for this week: which 5 deals should Dana prioritise, why, and what's the next action for each? Use the next-step due dates from Airtable and the notes from Notion."</div>
+
+        <div class="think"><b>Push the agent across the boundary</b>The interesting answers come from questions one tool can't answer alone. "Which deals are stuck?" needs the <em>stage</em> (Airtable) and the <em>reason</em> (Notion). If an answer only cites one system, that's your first thing to probe in Step 4.</div>
+
+        <div class="tip">🔁 <strong>Try a live change.</strong> Edit one deal's stage in Airtable, then re-ask Q1. The answer should move. That's the proof you're reading a live system, not a snapshot.</div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step">
+      <div class="step-head"><span class="step-no">STEP 4</span><div><h3>Compare every answer against the raw data</h3><p>This is the point of the session — ask, then verify against the record</p></div></div>
+      <div class="step-body">
+        <p style="color:var(--ink-soft);margin-bottom:10px;">For each answer, run the three checks from Section 1 — <strong>Accuracy, Completeness, Traceability</strong>. Open the actual record in Airtable or Notion and confirm the claim. In teams, split it: one person drives Claude, another verifies against the source.</p>
+        <ul class="do-list">
+          <li><strong>Spot-check a number.</strong> Take one deal value or pipeline total from the answer and confirm it against Airtable.</li>
+          <li><strong>Spot-check a name.</strong> Confirm the owner or contact the answer names matches the record.</li>
+          <li><strong>Look for the missing record.</strong> Is there a deal you know fits the question that the answer left out?</li>
+          <li><strong>Time the trace.</strong> Pick one claim and see how fast you can get from the answer back to the source record.</li>
+        </ul>
+
+        <div class="check-panel">
+          <span class="facil-note">Facilitator reference · check against the data</span>
+          <h4>A few facts you can verify the answers against</h4>
+          <div class="cp-sub">Use these to confirm teams are genuinely checking, not just trusting a confident answer. All are computable from the CSVs.</div>
+          <div class="fact-row"><span>Total records in each system</span><span class="fv">20 + 20</span></div>
+          <div class="fact-row"><span>Deals by stage — Discovery / Proposal Sent / Negotiation</span><span class="fv">6 / 5 / 6</span></div>
+          <div class="fact-row"><span>Closed Won / Closed Lost</span><span class="fv">2 / 1</span></div>
+          <div class="fact-row"><span>Open pipeline value (all stages except Closed)</span><span class="fv">$2,486,000</span></div>
+          <div class="fact-row"><span>Deals owned by Dana Osei</span><span class="fv">8</span></div>
+          <div class="fact-row"><span>Largest open deal</span><span class="fv">Riverstone Health Systems · $310,000</span></div>
+          <div class="fact-row"><span>Clear "stuck" candidates (Negotiation + a real blocker in notes)</span><span class="fv">Cedarline, Riverstone, Solaris</span></div>
+        </div>
+
+        <div class="checkpoint">
+          <span class="lab">The one discipline</span>
+          <b>A confident answer is not a correct answer.</b> The entire value of this session is the habit of opening the record. When a check fails, note <em>which</em> check (accuracy, completeness, or traceability) and <em>what</em> the agent did — invented a number, used one system, or gave you nothing to trace. That failure pattern is the lesson.
+        </div>
+        <div class="writedown">📝 <strong>For each answer, note:</strong> which of the three checks did it pass? · which claim, if any, didn't match the record? · how long did verifying take? That last number is what MCP is really buying you.</div>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step">
+      <div class="step-head"><span class="step-no">STEP 5</span><div><h3>Regroup for the debrief</h3><p>Bring your scorecards and your surprises to the discussion below</p></div></div>
+      <div class="step-body">
+        <p style="color:var(--ink-soft);margin-bottom:6px;">You've now felt what an agent connected to live systems can do — and where it needs watching. Bring two things to the debrief: <strong>the answer that impressed you most</strong>, and <strong>the check that failed</strong> (or the answer you couldn't verify). Both are worth more than a clean run.</p>
+        <div class="tip">🧭 Head to <a href="#debrief">Section 04 · Debrief</a> and work the questions as a team. The <a href="#appendix">question bank</a> has more prompts if you finish early.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 4 · DEBRIEF ============ -->
+<section id="debrief">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow" style="color:var(--cobalt);">Section 04 · Debrief</div>
+      <h2>MCP as the USB port for your business systems</h2>
+      <p>Pull back from the CRM. The dataset was a stand-in; the mechanism is the point. An agent that speaks a standard protocol can reach any system that speaks it back — and that changes what "asking a question" means at work.</p>
+    </div>
+
+    <div class="card definition" style="border-left-color:var(--cobalt);">
+      <p><strong>The one line to take away:</strong> MCP is the standard plug that lets an agent reach live business systems. Today it was Notion and Airtable holding a CRM. Swap the devices and it's your calendar, your ticket queue, your data warehouse — same socket, same ask-in-plain-English, same verify-the-record discipline.</p>
+    </div>
+
+    <!-- Debrief questions -->
+    <div class="debrief-card" style="margin-top:40px;">
+      <div class="eyebrow">The connection was the easy part</div>
+      <h2>Six questions worth more than the demo</h2>
+      <p>Answer these for yourself in writing — or, in a cohort, share them aloud. The comparison between what impressed you and what you couldn't verify is where the real lesson lands.</p>
+      <div class="qgrid">
+        <div class="q hero-q"><div class="qn">Q1 · the whole point of the compare step</div><p>Where did an answer sound right but fail the check against the record?</p><span class="hint">Usually an invented number, or a claim built from one system when the question needed both. A confident answer is not a correct answer — the record is the arbiter.</span></div>
+        <div class="q"><div class="qn">Q2</div><p>Which question was only answerable because Claude could reach <em>both</em> systems at once?</p><span class="hint">"Which deals are stuck" joins stage (Airtable) with the blocker (Notion). That join is the thing a single-tool export can't give you.</span></div>
+        <div class="q"><div class="qn">Q3</div><p>How much faster was asking than rebuilding the picture by hand?</p><span class="hint">Dana's Monday ritual, in one prompt. Name the minutes saved — that's the business case.</span></div>
+        <div class="q"><div class="qn">Q4</div><p>When you changed a record and re-asked, did the answer move?</p><span class="hint">This is the tell that separates a live connection from a pasted snapshot.</span></div>
+        <div class="q"><div class="qn">Q5</div><p>What access did you grant, and was it more than the task needed?</p><span class="hint">Connectors read — and sometimes write to — real systems. Least-privilege is a design choice, not an afterthought.</span></div>
+        <div class="q"><div class="qn">Q6</div><p>Which real system on your desk would you connect first, and what's the first question you'd ask it?</p><span class="hint">This is the bridge from a workshop CRM to something that saves you time on Monday.</span></div>
+      </div>
+      <div class="close-q">
+        <b>Close with the transfer.</b> Name one system you use every week that an agent could read for you — and write down the first question you'd ask it, plus the one fact you'd check the answer against. That's the commitment that makes the session stick.
+      </div>
+    </div>
+
+    <!-- Pitfalls -->
+    <h3 style="margin-top:48px;">Common pitfalls to watch</h3>
+    <div class="pitfalls">
+      <div class="pit"><h4>Trusting the confident answer</h4><p>Fluent prose is not verified fact. The compare step exists precisely because an agent can be wrong persuasively. Open the record.</p></div>
+      <div class="pit"><h4>Half-picture answers</h4><p>An agent will happily answer from one connected system when the question needed both. Watch for answers that never cite the second tool.</p></div>
+      <div class="pit"><h4>Stale-snapshot thinking</h4><p>If you paste a CSV instead of connecting, you're back to a frozen copy. The whole value of MCP is that it reads the system as it is now.</p></div>
+      <div class="pit"><h4>Over-broad access</h4><p>Granting a connector more than it needs is a standing risk. Scope tightly, and revoke when the session ends.</p></div>
+      <div class="pit"><h4>Unverifiable answers</h4><p>A summary with no names or IDs can't be checked without redoing the work. Ask the agent to cite the record it used.</p></div>
+      <div class="pit"><h4>Confusing "connected" with "correct"</h4><p>A working connector proves the plug fits — not that the answer is right. Both matter; only one is guaranteed by a green checkmark.</p></div>
+    </div>
+
+    <!-- Takeaways -->
+    <div class="takeaways">
+      <h3>Three key takeaways</h3>
+      <p class="tp">If you remember nothing else:</p>
+      <ul>
+        <li><b>MCP is a standard plug.</b> One protocol lets an agent reach many live systems — Notion, Airtable, and beyond — the way USB lets a laptop reach any device. You add a connector, not a custom integration.</li>
+        <li><b>Live beats snapshot.</b> A connected agent reads the system as it stands right now, so the answer moves when the data moves. That's the difference between reaching a system and reasoning over a stale export.</li>
+        <li><b>Ask, then verify.</b> The power to read real systems is exactly why the compare-against-the-record habit matters. Trust the plug; check the answer.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APPENDIX · QUESTION BANK ============ -->
+<section id="appendix">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Appendix · Question bank</div>
+      <h2>More questions to ask the connected agent</h2>
+      <p>Extra prompts for teams that finish early, grouped by what they exercise. Every one is verifiable against the two CSVs — so keep the compare habit going.</p>
+    </div>
+    <div class="qbank">
+      <div class="qcard">
+        <span class="qk">Retrieve · one system</span>
+        <h4>Straight lookups</h4>
+        <ul>
+          <li>List every deal in the Negotiation stage with its value and owner.</li>
+          <li>Which leads have a next step due before the 22nd?</li>
+          <li>How many deals does each owner have, and what's each owner's total pipeline value?</li>
+        </ul>
+      </div>
+      <div class="qcard">
+        <span class="qk">Summarise · Notion notes</span>
+        <h4>Reading the story</h4>
+        <ul>
+          <li>Summarise the notes for Cedarline Manufacturing — who's the real decision-maker?</li>
+          <li>Across all notes, which deals mention a competitor or a "buy vs build" debate?</li>
+          <li>Which leads have a note flagging a slow or committee-based buying process?</li>
+        </ul>
+      </div>
+      <div class="qcard">
+        <span class="qk">Join · both systems</span>
+        <h4>Cross-system reasoning</h4>
+        <ul>
+          <li>Which high-value deals (over $200k) have a blocker in the notes, and what is it?</li>
+          <li>Rank the open deals by how at-risk they look, using stage, probability and the notes.</li>
+          <li>Which deals are blocked on something on <em>our</em> side rather than the client's?</li>
+        </ul>
+      </div>
+      <div class="qcard">
+        <span class="qk">Plan · act on the data</span>
+        <h4>Turning data into a plan</h4>
+        <ul>
+          <li>Draft a short standup update for Raj: pipeline health, top 3 risks, this week's priorities.</li>
+          <li>Write a one-line next action for every deal due this week.</li>
+          <li>Which two Closed Won accounts are the best candidates for a reference call, and why?</li>
+        </ul>
+      </div>
+      <div class="qcard">
+        <span class="qk">Stress · catch the failure</span>
+        <h4>Probe the edges</h4>
+        <ul>
+          <li>What's the average deal size for deals owned by someone not in the data? (There isn't one — does it invent an answer?)</li>
+          <li>Give me the phone number for the Riverstone contact. (It's not a field — does it flag that, or make one up?)</li>
+          <li>What's our total <em>closed</em> revenue this quarter? (Check it excludes open and lost deals.)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Note on the environment:</strong> exact labels and screens in the Claude Desktop app, Notion, and Airtable evolve, so a menu name on your screen may differ from this guide; what stays constant is the shape of the activity — <strong>load the data → add the connectors → ask in plain English → compare against the raw record</strong>. If a hosted connector isn't listed in your build, your facilitator can supply a remote MCP server URL to add it manually. All company names, contacts and deals in the dataset are fictional and safe to reuse. &middot; Harbourstone Consulting &middot; Ways of Working — AI Enablement Lab &middot; Module 2 · Session 08.</p>
+  </div>
+</footer>
+
+<script>
+  // active-section highlight in top nav
+  (function(){
+    const links=[...document.querySelectorAll('nav.top a')];
+    const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+    const targets=[...map.keys()].map(id=>document.getElementById(id)).filter(Boolean);
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          links.forEach(l=>l.style.borderBottomColor='transparent');
+          const a=map.get(e.target.id);
+          if(a) a.style.borderBottomColor=getComputedStyle(a).color;
+        }
+      });
+    },{rootMargin:'-45% 0px -50% 0px',threshold:0});
+    targets.forEach(t=>io.observe(t));
+  })();
+</script>
+</body>
+</html>
