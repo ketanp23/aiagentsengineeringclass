@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build a Simple Agent Evaluation — Harbourstone Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2338; --ink-soft:#3A4360; --paper:#F6F7F3; --card:#FFFFFF;
+    --line:#DDE0D8; --gray:#6A7183;
+    --marker:#FFDE59; --marker-soft:#FFF3BF;
+    --cobalt:#2D5BFF; --cobalt-soft:#E9EEFF;
+    --green:#1E8E5A; --green-soft:#E4F4EC;
+    --violet:#7A3FD1; --violet-soft:#F1E9FC;
+    --red-soft:#FDECEC;
+    --amber:#B7791A; --amber-soft:#FBF1DE;
+    --radius:14px;
+    --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+  mark{background:linear-gradient(104deg,transparent .5%,var(--marker) 3%,var(--marker) 97%,transparent 99.5%);padding:0 .25em;border-radius:2px;color:var(--ink);font-weight:600}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--cobalt);font-weight:500}
+  h2{font-family:var(--display);font-weight:700;font-size:clamp(25px,3.2vw,34px);letter-spacing:-.01em;margin-top:8px}
+  h3{font-family:var(--display);font-weight:600;font-size:19px}
+  section{padding:60px 0}
+  .sec-head{margin-bottom:30px}
+  .sec-head p{color:var(--ink-soft);margin-top:10px;max-width:74ch}
+  code{font-family:var(--mono);font-size:.9em;background:#EEF0EA;border-radius:5px;padding:1px 6px;color:var(--ink)}
+
+  /* header */
+  header.hero{background:var(--ink);color:#fff;padding:60px 0 48px;border-bottom:4px solid var(--marker)}
+  .hero .eyebrow{color:var(--marker);margin-bottom:14px}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,4.6vw,48px);line-height:1.08;max-width:820px}
+  .hero p.sub{margin-top:16px;color:#C6CCDF;max-width:680px;font-size:17px}
+  .crumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px;font-family:var(--mono);font-size:12.5px}
+  .crumbs span{border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:6px 14px;color:#E8EBF5}
+
+  /* sticky nav */
+  nav.top{position:sticky;top:0;z-index:30;background:rgba(246,247,243,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;gap:24px;overflow-x:auto}
+  nav.top a{display:block;padding:14px 0;white-space:nowrap;font-size:14px;font-weight:600;color:var(--gray);text-decoration:none;border-bottom:2.5px solid transparent}
+  nav.top a:hover{color:var(--cobalt);border-bottom-color:var(--cobalt)}
+  nav.top a.na{color:var(--ink)}
+
+  /* cards */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px}
+  .definition{border-left:5px solid var(--cobalt);font-size:17px}
+  .definition strong{color:var(--cobalt)}
+
+  .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:16px;margin-top:22px}
+  .toolcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .toolcard .mode-tag{margin-bottom:10px}
+  .toolcard p{font-size:14.5px;color:var(--ink-soft);margin-top:6px}
+  .mode-tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;border-radius:6px;padding:4px 10px;font-weight:600}
+  .mode-det{background:var(--cobalt-soft);color:var(--cobalt)}
+  .mode-mod{background:var(--violet-soft);color:var(--violet)}
+  .mode-hum{background:var(--green-soft);color:var(--green)}
+
+  /* persona cards */
+  .persona-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+  .persona{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;display:flex;gap:15px;align-items:flex-start}
+  .avatar{width:46px;height:46px;border-radius:12px;flex:0 0 46px;display:grid;place-items:center;font-family:var(--display);font-weight:700;color:#fff;font-size:17px}
+  .av-d{background:linear-gradient(135deg,#2D5BFF,#5566E8)} .av-r{background:linear-gradient(135deg,#1E8E5A,#14A08E)}
+  .persona .who{font-weight:600;font-size:15.5px}
+  .persona .role{font-size:12px;color:var(--gray);font-family:var(--mono);letter-spacing:.02em;margin-bottom:5px}
+  .persona p{font-size:14px;color:var(--ink-soft)}
+  @media(max-width:820px){.persona-grid{grid-template-columns:1fr}}
+
+  /* criteria */
+  .crit{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-top:18px;overflow:hidden}
+  .crit-head{padding:20px 26px 14px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:13px;flex-wrap:wrap}
+  .crit-letter{font-family:var(--display);font-weight:700;font-size:30px;line-height:1}
+  .crit.rec .crit-letter{color:var(--cobalt)} .crit.str .crit-letter{color:var(--violet)} .crit.del .crit-letter{color:var(--green)}
+  .crit-head h3{margin:0;font-size:20px}
+  .crit-q{font-size:14px;color:var(--gray);font-style:italic;flex-basis:100%}
+  .crit-body{padding:20px 26px 24px;display:grid;grid-template-columns:1.05fr .95fr;gap:24px}
+  .crit-body h4{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);margin-bottom:8px}
+  .crit-body p{font-size:14.5px;color:var(--ink-soft);margin-bottom:11px}
+  .ex{border-radius:10px;padding:11px 14px;font-size:13.5px;margin-bottom:8px;line-height:1.55}
+  .ex b{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+  .ex.good{background:var(--green-soft);color:#175C3D} .ex.good b{color:var(--green)}
+  .ex.bad{background:var(--red-soft);color:#7C3530} .ex.bad b{color:#B4443E}
+  .scale{list-style:none;margin-top:2px}
+  .scale li{display:flex;gap:11px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px;color:var(--ink-soft)}
+  .scale li:last-child{border-bottom:none}
+  .scale .n{font-family:var(--mono);font-weight:600;font-size:11.5px;min-width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--paper);border:1px solid var(--line);color:var(--ink)}
+  .evidence{background:var(--marker-soft);border-radius:10px;padding:12px 15px;font-size:13px;margin-top:12px;color:var(--ink)}
+  .evidence b{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:3px}
+
+  /* client / scenario card */
+  .brief-wrap{display:grid;grid-template-columns:1.25fr .75fr;gap:20px;align-items:start;margin-top:20px}
+  .client-card{background:var(--ink);color:#DCE0EE;border-radius:var(--radius);padding:22px 24px}
+  .client-card h3{color:#fff;font-size:16px;margin-bottom:3px}
+  .client-card .cc-sub{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--marker);margin-bottom:12px}
+  .fact{display:flex;gap:10px;border-top:1px solid rgba(255,255,255,.12);padding:8px 0;font-size:13px}
+  .fact .fk{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8B94AE;min-width:86px;padding-top:2px}
+  .fict-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8B94AE;margin-top:12px;border-top:1px dashed rgba(255,255,255,.18);padding-top:9px}
+
+  /* step cards */
+  .step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-top:26px}
+  .step-head{display:flex;align-items:center;gap:16px;padding:18px 24px;border-bottom:1px solid var(--line);background:#FBFBF7}
+  .step-no{font-family:var(--mono);font-weight:600;font-size:13px;background:var(--ink);color:var(--marker);border-radius:9px;padding:8px 13px;letter-spacing:.06em;flex-shrink:0}
+  .step-head h3{font-size:18px}
+  .step-head p{font-size:13.5px;color:var(--gray);margin-top:2px}
+  .step-body{padding:22px 24px}
+  .do-list{margin:2px 0 14px;border-left:3px solid var(--marker);padding:2px 0 2px 16px}
+  .do-list li{list-style:none;position:relative;padding-left:24px;margin-bottom:8px;color:var(--ink-soft);font-size:15px}
+  .do-list li::before{content:"→";position:absolute;left:0;color:var(--cobalt);font-weight:700}
+  .tip{background:var(--marker-soft);border-radius:10px;padding:12px 16px;font-size:14px;color:var(--ink);margin-top:12px}
+  .redteam{background:var(--red-soft);border:1px solid #F1C7C4;border-radius:10px;padding:12px 16px;font-size:14px;color:#7A2418;margin-top:12px}
+  .redteam .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#B4443E;display:block;margin-bottom:4px}
+  .redteam b{color:#5e1a11}
+
+  .prompt-box{background:var(--ink);color:#E9ECF6;border-radius:12px;padding:17px 19px;font-family:var(--mono);font-size:13px;line-height:1.7;margin:12px 0 6px}
+  .prompt-box .lbl{color:var(--marker);font-size:11px;letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:7px}
+
+  /* code editor mockup */
+  .code-win{background:#0F1524;border:1px solid #232B41;border-radius:12px;overflow:hidden;margin:14px 0 6px;box-shadow:0 10px 30px rgba(27,35,56,.14)}
+  .code-bar{display:flex;align-items:center;gap:8px;background:#161D30;padding:9px 15px;border-bottom:1px solid #232B41}
+  .code-bar .fname{font-family:var(--mono);font-size:12px;color:#8FA0C8;margin-left:6px}
+  .code-bar .tag-mono{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#5E6A8C}
+  .code-body{padding:16px 18px;font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#C7CFE6;white-space:pre-wrap;overflow-x:auto}
+  .code-body .fm{color:#5E6A8C}
+  .code-body .k{color:#7FB0FF}
+  .code-body .s{color:#9DE0A6}
+  .code-body .h{color:var(--marker);font-weight:600}
+  .code-body .c{color:#6B7690}
+  .code-body .cmt{color:#7E8AA6;font-style:italic}
+
+  /* folder tree + downloads */
+  .folder-tree{background:#0F1524;border:1px solid #26304C;border-radius:12px;padding:18px 20px;font-family:var(--mono);font-size:13px;line-height:1.7;color:#C7D0E6;overflow-x:auto;margin:16px 0;white-space:pre-wrap;word-break:break-word}
+  .folder-tree .fdir{color:#7FB0FF;font-weight:600}
+  .folder-tree .ffile{color:#EAECF3}
+  .folder-tree .fnote{color:#6E7A97}
+  .folder-tree .fhi{color:var(--marker)}
+  .dl-card{display:flex;align-items:center;gap:16px;background:var(--cobalt-soft);border:1px solid #C3D0FF;border-radius:12px;padding:16px 18px;margin:16px 0}
+  .dl-card .dl-ic{flex:0 0 44px;width:44px;height:44px;border-radius:10px;background:var(--cobalt);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:600}
+  .dl-card .dl-body{flex:1}
+  .dl-card .dl-body b{font-family:var(--display);font-size:15px;color:var(--ink)}
+  .dl-card .dl-body p{font-size:13.5px;color:var(--ink-soft);margin-top:2px}
+  .dl-card .dl-tag{font-family:var(--mono);font-size:11px;color:var(--cobalt);border:1px solid var(--cobalt);border-radius:999px;padding:4px 10px;white-space:nowrap}
+  a.dl-card{text-decoration:none;color:inherit;cursor:pointer;transition:border-color .15s, box-shadow .15s}
+  a.dl-card:hover{border-color:var(--cobalt);box-shadow:0 2px 10px rgba(45,91,255,.12)}
+
+  .think{background:var(--marker-soft);border:1px solid #F0DE8E;border-radius:10px;padding:14px 16px;margin:14px 0;font-size:14.5px;color:#5B4A12}
+  .think b{color:#7A6410;display:block;margin-bottom:4px;font-family:var(--display)}
+  .stepflow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:20px 0 4px;font-family:var(--mono);font-size:12px}
+  .stepflow .sf{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px;color:var(--ink-soft)}
+  .stepflow .sf.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stepflow .sfar{color:var(--gray)}
+  .band-eval{border-left:5px solid var(--cobalt);padding-left:22px}
+
+  /* simplified-step helpers */
+  .step-plain{background:var(--cobalt-soft);border-radius:10px;padding:13px 16px;font-size:15px;color:#1c2c5e;margin-bottom:14px;line-height:1.55}
+  .step-plain b{color:var(--cobalt);font-family:var(--display)}
+  .done-when{display:flex;gap:10px;align-items:flex-start;background:var(--green-soft);border:1px solid #BFE4CF;border-radius:10px;padding:12px 16px;font-size:14px;color:#175C3D;margin-top:14px}
+  .done-when .dw-ic{flex:0 0 auto;font-weight:700;color:var(--green)}
+  .done-when b{color:#124b31;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:2px}
+
+  /* activity roadmap */
+  .roadmap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:8px 4px;margin-top:6px}
+  .rm-row{display:flex;gap:16px;align-items:flex-start;padding:14px 20px;border-bottom:1px solid var(--line)}
+  .rm-row:last-child{border-bottom:none}
+  .rm-n{flex:0 0 30px;width:30px;height:30px;border-radius:8px;background:var(--ink);color:var(--marker);font-family:var(--mono);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .rm-b b{font-family:var(--display);font-size:15.5px;color:var(--ink)}
+  .rm-b p{font-size:13.5px;color:var(--ink-soft);margin-top:2px}
+
+  /* Harbourstone example callout */
+  .eg{background:var(--marker-soft);border-radius:9px;padding:11px 15px;font-size:14.5px;color:#5b4a12;margin:9px 0;line-height:1.5}
+  .eg b{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:3px}
+  .eg .q{color:var(--ink);font-weight:600}
+  /* plain anatomy rows */
+  .anat{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:16px 0}
+  .anat-row{display:grid;grid-template-columns:130px 1fr;gap:0;border-top:1px solid var(--line)}
+  .anat-row:first-child{border-top:none}
+  .anat-row .al{background:var(--ink);color:#fff;padding:16px 18px;font-family:var(--display);font-weight:700;font-size:15px;display:flex;flex-direction:column;gap:3px}
+  .anat-row .al span{font-family:var(--mono);font-weight:400;font-size:10.5px;letter-spacing:.08em;color:var(--marker);text-transform:uppercase}
+  .anat-row .ar{padding:14px 18px}
+  .anat-row .ar .plain{font-size:14.5px;color:var(--ink);font-weight:500}
+  .anat-row .ar .eg{margin:7px 0 0}
+  @media(max-width:640px){.anat-row{grid-template-columns:1fr}.anat-row .al{flex-direction:row;align-items:baseline;gap:8px}}
+  /* two-file explainer */
+  .files{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+  .filebox{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);overflow:hidden}
+  .filebox .fh{background:#FBFBF7;border-bottom:1px solid var(--line);padding:15px 18px}
+  .filebox .fh .ft{font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink)}
+  .filebox .fh .fn{font-family:var(--mono);font-size:11.5px;color:var(--cobalt);margin-top:3px}
+  .filebox .fb{padding:15px 18px;font-size:14px;color:var(--ink-soft);line-height:1.55}
+  @media(max-width:640px){.files{grid-template-columns:1fr}}
+
+  .solpoint{display:flex;gap:10px;align-items:flex-start;background:var(--violet-soft);border:1px solid #D9C6F2;border-radius:10px;padding:12px 15px;margin:12px 0;font-size:14px;color:#4A2E77}
+  .solpoint b{color:#3C2463}
+  .solpoint a{color:var(--violet);font-weight:600}
+
+  .objective{display:flex;gap:14px;align-items:flex-start;background:var(--ink);color:#EDEFF6;border-radius:12px;padding:16px 20px;margin:18px 0 4px;font-size:15px;line-height:1.6}
+  .objective .olab{flex:0 0 auto;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--marker);border:1px solid rgba(255,222,89,.5);border-radius:999px;padding:3px 10px;margin-top:1px}
+  .setup{display:flex;gap:12px;align-items:flex-start;background:var(--cobalt-soft);border:1px solid #C3D0FF;border-radius:12px;padding:14px 18px;margin:12px 0 4px;font-size:14.5px;color:#22336b;line-height:1.6}
+  .setup .slab{flex:0 0 auto;font-size:18px;line-height:1.3}
+  .setup b{color:#152451}
+  .setup a{color:var(--cobalt);font-weight:600}
+
+  /* toolkit reference cards */
+  .tk{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-top:22px}
+  .tk-head{display:flex;align-items:center;gap:16px;padding:20px 26px;border-bottom:1px solid var(--line)}
+  .tk-ic{width:52px;height:52px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .tk-ic svg{width:30px;height:30px}
+  .tk.a1 .tk-ic{background:var(--cobalt-soft)} .tk.a2 .tk-ic{background:var(--green-soft)} .tk.a3 .tk-ic{background:var(--violet-soft)}
+  .tk-head h3{font-size:21px;margin:0}
+  .tk-head .tk-tl{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-top:2px}
+  .tk-body{padding:22px 26px 24px}
+  .tk-body > p{font-size:15.5px;color:var(--ink-soft);max-width:78ch;margin-bottom:16px}
+  .tk-diagram{background:#FBFBF7;border:1px solid var(--line);border-radius:12px;padding:16px;margin:6px 0 18px}
+  .tk-diagram figcaption{font-family:var(--mono);font-size:11.5px;color:var(--gray);text-align:center;margin-top:8px}
+  .tk-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+  .tk-two .box{border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.55}
+  .tk-two .good{background:var(--green-soft);color:#175C3D}
+  .tk-two .plain{background:#EEF0EA;color:var(--ink-soft)}
+  .tk-two .box b{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+  .tk-two .plain b{color:var(--gray)} .tk-two .good b{color:var(--green)}
+  .tk-when{background:var(--marker-soft);border-radius:10px;padding:12px 16px;font-size:14.5px;color:var(--ink);margin-top:14px}
+  .tk-when b{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:3px}
+  @media(max-width:820px){.tk-two{grid-template-columns:1fr}}
+
+  /* scorecard / bench tables */
+  .bench{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+  .bench th{background:var(--ink);color:#fff;font-family:var(--display);font-weight:600;font-size:12.5px;text-align:left;padding:10px 13px}
+  .bench td{padding:10px 13px;border-bottom:1px solid var(--line);color:var(--ink-soft)}
+  .bench tr:last-child td{border-bottom:none}
+  .bench .pass{color:var(--green);font-weight:600;font-family:var(--mono)}
+  .bench .fail{color:#B4443E;font-weight:600;font-family:var(--mono)}
+  .bench .rate{font-family:var(--mono);font-weight:600;color:var(--ink)}
+  .scorecard-wrap{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:14px 0 6px}
+
+  .writedown{background:var(--cobalt-soft);border-radius:10px;padding:11px 15px;font-size:14px;color:var(--ink);margin-top:14px}
+  .checkpoint{background:var(--amber-soft);border:1px solid #EBD9AE;border-radius:10px;padding:12px 16px;font-size:14px;color:#6C5210;margin-top:14px}
+  .checkpoint .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:4px}
+  .checkpoint b{color:#4d3a08}
+
+  /* facilitator check panel */
+  .check-panel{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--green);border-radius:var(--radius);padding:20px 24px;margin-top:16px}
+  .check-panel h4{font-family:var(--display);font-size:16px;margin-bottom:4px}
+  .check-panel .cp-sub{font-size:13.5px;color:var(--gray);margin-bottom:14px}
+  .fact-row{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:baseline;padding:9px 0;border-top:1px dashed var(--line);font-size:14px;color:var(--ink-soft)}
+  .fact-row:first-of-type{border-top:none}
+  .fact-row .fv{font-family:var(--mono);font-weight:600;color:var(--ink);white-space:nowrap}
+  .facil-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);border:1px solid var(--green);border-radius:999px;padding:3px 10px;display:inline-block;margin-bottom:10px}
+
+  /* debrief */
+  .debrief-card{background:linear-gradient(180deg,#141826,#0F1320);color:#D5DAE6;border-radius:20px;padding:40px 36px;margin-top:8px}
+  .debrief-card .eyebrow{color:#8FA0FF}
+  .debrief-card h2{color:#fff}
+  .debrief-card > p{color:#9AA3B8;max-width:64ch;margin-top:12px}
+  .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:26px}
+  .q{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:13px;padding:16px 18px}
+  .q.hero-q{grid-column:1 / -1;background:rgba(143,160,255,.09);border-color:rgba(143,160,255,.26)}
+  .q .qn{font-family:var(--mono);font-size:12px;color:#8FA0FF;font-weight:600;margin-bottom:6px}
+  .q p{margin:0;font-size:14.5px;color:#CFD5E4}
+  .q.hero-q p{font-size:16px;color:#EAEDF6;font-weight:500}
+  .q .hint{display:block;margin-top:8px;font-size:12.5px;color:#7E879C;font-style:italic}
+  .close-q{margin-top:24px;background:rgba(143,160,255,.1);border:1px solid rgba(143,160,255,.28);border-radius:13px;padding:17px 21px;color:#E4E8F4;font-size:15px}
+  .close-q b{color:#fff}
+  .pitfalls{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:24px}
+  .pit{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;border-left:3px solid var(--cobalt)}
+  .pit h4{font-size:15px;margin-bottom:5px}
+  .pit p{font-size:13.5px;color:var(--gray);margin:0}
+  .takeaways{background:var(--ink);color:#DFE3F0;border-radius:var(--radius);padding:28px 30px;margin-top:26px}
+  .takeaways h3{color:#fff;font-size:18px;margin-bottom:8px}
+  .takeaways .tp{font-size:13.5px;color:#B9C0D6;margin-bottom:14px}
+  .takeaways li{list-style:none;position:relative;padding-left:26px;margin-bottom:11px;font-size:14.5px}
+  .takeaways li::before{content:"✦";position:absolute;left:0;color:var(--marker)}
+  .takeaways b{color:#fff}
+
+  /* appendix */
+  .qbank{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:16px;margin-top:20px}
+  .qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px}
+  .qcard h4{font-family:var(--display);font-size:15px;margin-bottom:4px}
+  .qcard .qk{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--cobalt);margin-bottom:10px;display:block}
+  .qcard ul{list-style:none;margin:0;padding:0}
+  .qcard li{position:relative;padding-left:20px;margin-bottom:9px;font-size:14px;color:var(--ink-soft);line-height:1.5}
+  .qcard li::before{content:"“";position:absolute;left:0;top:-2px;color:var(--cobalt);font-weight:700;font-size:16px}
+  .fw{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;margin:18px 0}
+  .fw > h3{font-family:var(--display);font-size:19px;margin-bottom:2px}
+  .fw .fw-sub{color:var(--gray);font-size:13.5px;margin-bottom:14px}
+  .fw-move{display:flex;gap:14px;padding:14px 0;border-top:1px dashed var(--line)}
+  .fw-move:first-of-type{border-top:none;padding-top:2px}
+  .fw-move .fw-n{flex:0 0 30px;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;font-family:var(--mono);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
+  .fw-move .fw-b{flex:1}
+  .fw-move .fw-b b{font-family:var(--display);font-size:15px;color:var(--ink)}
+  .fw-move .fw-b p{color:var(--ink-soft);font-size:14px;margin-top:3px}
+  .fw-move .fw-b .map{font-family:var(--mono);font-size:12px;color:var(--cobalt);margin-top:6px}
+
+  footer{padding:38px 0 54px;color:var(--gray);font-size:13px;font-family:var(--mono)}
+  footer .wrap{border-top:1px solid var(--line);padding-top:20px}
+
+  @media(max-width:820px){
+    .crit-body{grid-template-columns:1fr}
+    .brief-wrap{grid-template-columns:1fr}
+  }
+  @media(max-width:720px){.qgrid,.pitfalls{grid-template-columns:1fr}}
+  @media print{header.hero{background:#fff;color:#000}nav.top{display:none}.code-win{box-shadow:none}}
+
+  /* self-contained test card */
+  .testcard{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:14px 0;background:var(--card)}
+  .testcard .tc-h{background:var(--ink);color:#fff;padding:12px 18px;font-family:var(--display);font-weight:600;font-size:15.5px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .testcard .tc-h .tc-tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--marker);white-space:nowrap}
+  .tc-half{padding:15px 18px}
+  .tc-half.in{border-bottom:1px dashed var(--line);background:#FBFBF7}
+  .tc-lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--cobalt);display:block;margin-bottom:8px}
+  .tc-lbl.g{color:var(--green)}
+  .tc-notes{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);line-height:1.65;white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+  .tc-check{list-style:none;margin:0;padding:0}
+  .tc-check li{position:relative;padding-left:30px;margin-bottom:8px;font-size:14px;color:var(--ink);line-height:1.5}
+  .tc-check li .gr{position:absolute;left:0;top:1px;font-family:var(--mono);font-size:10px;font-weight:600;width:22px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff}
+  .tc-check li .gr.d{background:var(--cobalt)} .tc-check li .gr.m{background:var(--violet)} .tc-check li .gr.h{background:var(--green)}
+  /* big numbered loop */
+  .loop{counter-reset:loop;margin:16px 0}
+  .loop-step{display:flex;gap:16px;align-items:flex-start;padding:16px 0;border-top:1px solid var(--line)}
+  .loop-step:first-child{border-top:none}
+  .loop-num{flex:0 0 38px;width:38px;height:38px;border-radius:10px;background:var(--cobalt);color:#fff;font-family:var(--display);font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center}
+  .loop-b{flex:1}
+  .loop-b b{font-family:var(--display);font-size:16.5px;color:var(--ink)}
+  .loop-b p{font-size:14.5px;color:var(--ink-soft);margin-top:3px;line-height:1.55}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Session 12 · Agent Evaluation</div>
+    <h1>Evaluate the Skills You Built in Session 07</h1>
+    <p class="sub">Last session you built three AI Skills for Harbourstone and watched them handle a few inputs. This session you find out whether they can be <b>trusted</b> — the same way, every time — before the firm rolls them out to all 180 people.</p>
+    <div class="crumbs">
+      <span>👤 You are Dana Osei</span>
+      <span>🧩 Hands-on evaluation</span>
+      <span>🖥 Claude Cowork</span>
+      <span>📊 2 scorecards + your Session 07 skills</span>
+    </div>
+  </div>
+</header>
+
+<nav class="top">
+  <div class="wrap">
+    <a href="#recap">1 · Recap</a>
+    <a href="#skills">2 · The three skills</a>
+    <a href="#objective">3 · This session</a>
+    <a href="#dmh">4 · D · M · H</a>
+    <a href="#downloads">5 · Get your files</a>
+  </div>
+</nav>
+
+<!-- ===== 1 · RECAP ===== -->
+<section id="recap">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Part 1 · Recap</div>
+      <h2>Where we left off at Harbourstone</h2>
+      <p>A quick refresher on the story, so today makes sense on its own.</p>
+    </div>
+
+    <div class="card definition" style="margin-bottom:16px">
+      <strong>The story so far.</strong> Harbourstone Consulting grew fast — from 60 people to about 180 across Toronto, Chicago and London after a growth-equity deal. With that growth came a problem: the same deliverable now looks different depending on who wrote it, and the firm looks inconsistent to clients. The COO's <b>“Ways of Working”</b> pilot is the response — use AI to make everyday work consistent without slowing anyone down. In Session 07 you (<b>Dana</b>) took three repeatable Harbourstone tasks and turned each into a reusable <b>Skill</b>: a small folder with a <code>SKILL.md</code> that Claude Cowork loads and runs to the firm's standard.
+    </div>
+
+    <div class="persona-grid">
+      <div class="persona">
+        <div class="avatar av-d">DO</div>
+        <div>
+          <div class="who">Dana Osei — that's you</div>
+          <div class="role">Consultant · Retail &amp; Consumer</div>
+          <p>You built the three Skills. Today you put them to the test before they go firm-wide.</p>
+        </div>
+      </div>
+      <div class="persona">
+        <div class="avatar av-r">RM</div>
+        <div>
+          <div class="who">Raj Malhotra</div>
+          <div class="role">Engagement Manager · the quality bar</div>
+          <p>Raj's standards <em>are</em> the house style: lead with the outcome, cut anything confidential, never guess. Today he's the human reviewer your evaluation has to agree with.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 2 · THE THREE SKILLS ===== -->
+<section id="skills" style="background:#FBFBF7;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Part 2 · What you built</div>
+      <h2>The three Session 07 Skills</h2>
+      <p>These are the three Skills you'll be evaluating today. Each is a folder with a <code>SKILL.md</code> that Cowork runs. Here's what each one is supposed to do.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="toolcard">
+        <span class="mode-tag mode-det">Track A</span>
+        <h3 style="margin:10px 0 4px">weekly-status-update</h3>
+        <p>Turns raw engagement notes into a Harbourstone <b>client status update</b> in the house format — seven fixed sections, a RAG status, outcome first.</p>
+        <p style="margin-top:8px"><b>The hard part:</b> never invent a number (mark gaps <code>[TBC]</code>), keep it client-safe (no internal cost/margin, no unflattering staff notes), and stay in its lane (decline non-status asks).</p>
+      </div>
+      <div class="toolcard">
+        <span class="mode-tag mode-mod">Track B</span>
+        <h3 style="margin:10px 0 4px">swot-analysis</h3>
+        <p>Turns a company brief into a structured, <b>evidence-based SWOT</b>: four quadrants (Strengths · Weaknesses · Opportunities · Threats) plus an <b>Evidence-gaps</b> section.</p>
+        <p style="margin-top:8px"><b>The hard part:</b> every point must cite a fact in the brief, don't invent to fill a thin brief, stay objective under pressure to “make it impressive”, and never leak confidential detail.</p>
+      </div>
+      <div class="toolcard">
+        <span class="mode-tag mode-hum">Track C</span>
+        <h3 style="margin:10px 0 4px">meeting-minutes</h3>
+        <p>Turns messy notes into clean <b>minutes</b>: Decisions · an Action table (Action · Owner · Due) · Open questions · Notes.</p>
+        <p style="margin-top:8px"><b>The hard part:</b> never guess an owner (<code>[Owner TBC]</code>), only record decisions actually made, no gossip, and escalate — not action — improper asks.</p>
+      </div>
+    </div>
+    <div class="tip" style="margin-top:16px">All three share the same failure modes — missing data, confidential content smuggled in, and scope creep. That's exactly what your evaluation is built to catch.</div>
+  </div>
+</section>
+
+<!-- ===== 3 · OBJECTIVE ===== -->
+<section id="objective">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Part 3 · This session</div>
+      <h2>The objective: evaluate all three Skills</h2>
+    </div>
+
+    <div class="objective" style="font-size:16px">
+      <span class="olab">Objective</span>
+      <div>Put each of your three Skills to the test. You'll run every Skill against a set of tricky inputs, grade each output with a small set of checks, and decide — <b>with evidence, not a gut feeling</b> — whether each Skill is reliable enough to trust across all 180 people.</div>
+    </div>
+
+    <p style="color:var(--ink-soft);margin-top:20px;max-width:78ch">Concretely, for each Skill you will:</p>
+    <div class="do-list" style="max-width:80ch">
+      <li>Run it on each test input <b>three times</b> (AI doesn't give the identical answer twice — one run tells you nothing).</li>
+      <li>Grade every run <b>PASS or FAIL</b> against a short list of checks.</li>
+      <li>Count the pass rate, then <b>read the transcript</b> of any failure to decide: the Skill's fault, or the test's fault?</li>
+    </div>
+    <div class="checkpoint" style="margin-top:16px">
+      <span class="lab">The one rule</span>
+      A pass rate you didn't trace back to a transcript is just a guess. <b>Never “fix” a Skill before you've read why a run failed.</b>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4 · D M H ===== -->
+<section id="dmh" style="background:#FBFBF7;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Part 4 · How you grade</div>
+      <h2>Three kinds of check: D, M, H</h2>
+      <p>Every check you run is one of three kinds. The key difference is <b>who does the checking</b> — two are done by a human, one is handed to an AI.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="toolcard">
+        <span class="mode-tag mode-det">D · Deterministic</span>
+        <p style="margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--cobalt)">DONE BY A HUMAN</p>
+        <p style="margin-top:4px"><b>You check a plain yes/no.</b> No opinion — you just look at the output and answer. Fast and identical every time.</p>
+        <div class="eg" style="margin-top:10px"><b>Examples</b>
+          • Status update: are all <span class="q">7 sections</span> present?<br>
+          • SWOT: is the <span class="q">Evidence-gaps</span> section there?<br>
+          • Minutes: does every action have an owner or <span class="q">[Owner TBC]</span>?
+        </div>
+      </div>
+      <div class="toolcard">
+        <span class="mode-tag mode-mod">M · Model rubric</span>
+        <p style="margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--violet)">DONE BY AN LLM</p>
+        <p style="margin-top:4px"><b>A second AI scores it 1–5</b> against a written rubric — for judgement calls a yes/no can't capture. A <b>4 or 5 is a PASS</b>, 1–3 a FAIL.</p>
+        <div class="eg" style="margin-top:10px"><b>Examples</b>
+          • Status update: <span class="q">“leads with the outcome”</span>, not a task list?<br>
+          • SWOT: <span class="q">objective</span>, not marketing fluff?<br>
+          • Minutes: decisions vs open questions <span class="q">cleanly separated</span>?
+        </div>
+      </div>
+      <div class="toolcard">
+        <span class="mode-tag mode-hum">H · Human</span>
+        <p style="margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--green)">DONE BY A HUMAN</p>
+        <p style="margin-top:4px"><b>A person makes the call.</b> Raj reads a small handful himself — the judgement you can't fully automate, and the check that keeps the AI judge honest.</p>
+        <div class="eg" style="margin-top:10px"><b>Examples</b>
+          • Raj reads <span class="q">5 outputs</span> and confirms nothing confidential or off-tone slipped through.<br>
+          • Where his verdict and the M score disagree, the rubric gets fixed.
+        </div>
+      </div>
+    </div>
+    <div class="tk-when" style="margin-top:16px"><b>Why the split matters</b>D and H are your human judgement — quick objective checks and expert sign-off. M offloads the repetitive judgement to a second AI so it scales. You keep a little H precisely to make sure the M grader is scoring the way Raj would.</div>
+  </div>
+</section>
+
+<!-- ===== 5 · DOWNLOADS ===== -->
+<section id="downloads">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Part 5 · Get your files</div>
+      <h2>Download what you need</h2>
+      <p>Two scorecards to grade with, and — if you need them — the three Skills from Session 07.</p>
+    </div>
+
+    <h3 style="margin-bottom:2px">Scorecards</h3>
+    <p style="color:var(--gray);font-size:14px;margin-bottom:10px">Both are Excel workbooks with one sheet per Skill. Run cells are PASS/FAIL and the Score column adds up automatically.</p>
+
+    <a class="dl-card" href="harbourstone-scorecard-blank.xlsx" download>
+      <span class="dl-ic">XLS</span>
+      <span class="dl-body">
+        <b>Harbourstone scorecard — BLANK</b>
+        <p>Design-your-own version: each test shows its input (and an M-grader prompt), and you write your own checks and pick D/M/H.</p>
+      </span>
+      <span class="dl-tag">Download</span>
+    </a>
+
+    <a class="dl-card" href="harbourstone-scorecard.xlsx" download>
+      <span class="dl-ic">XLS</span>
+      <span class="dl-body">
+        <b>Harbourstone scorecard — SAMPLE (filled)</b>
+        <p>The reference version: the answer-key checks and their D/M/H graders are already filled in for all three Skills. Use it to grade, or to compare against your own.</p>
+      </span>
+      <span class="dl-tag">Download</span>
+    </a>
+
+    <h3 style="margin:26px 0 2px">Don't have your Session 07 Skills?</h3>
+    <p style="color:var(--gray);font-size:14px;margin-bottom:10px">If you didn't keep them, grab the solutions pack — all three Skills, ready to load into Cowork.</p>
+
+    <a class="dl-card" href="skill-templates-solutions.zip" download style="background:var(--green-soft);border-color:#BFE4CF">
+      <span class="dl-ic" style="background:var(--green)">ZIP</span>
+      <span class="dl-body">
+        <b>Session 07 Skills — solutions pack</b>
+        <p>The three skill folders (<code>weekly-status-update</code>, <code>swot-analysis</code>, <code>meeting-minutes</code>), each with a filled <code>SKILL.md</code>, a worked example, and the A/B/C test inputs.</p>
+      </span>
+      <span class="dl-tag" style="color:var(--green);border-color:var(--green)">Download</span>
+    </a>
+
+    <div class="setup" style="margin-top:20px">
+      <span class="slab">🖥</span>
+      <div><b>Then, in Cowork:</b> open the <b>Claude Desktop App</b> (from <a href="https://claude.ai/download">claude.ai/download</a>, signed in with your MICA Claude credentials), point a project at each skill folder, and you're ready to start grading with the scorecards above.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Harbourstone Consulting is a fictional firm created for this workshop. Dana Osei and Raj Malhotra are fictional. All client names, figures, and scenarios are illustrative and for training use only.<br><br>
+    Session 12 · Agent Evaluation — Evaluate the Skills You Built in Session 07
+  </div>
+</footer>
+
+<script>
+  const navLinks = document.querySelectorAll('nav.top a');
+  const sections = [...navLinks].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        navLinks.forEach(a => a.classList.toggle('na', a.getAttribute('href') === '#' + id));
+      }
+    });
+  }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+  sections.forEach(s => io.observe(s));
+</script>
+
+</body>
+</html>
