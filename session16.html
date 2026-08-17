@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Analysis and CXO output — Harbourstone Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2338; --ink-soft:#3A4360; --paper:#F6F7F3; --card:#FFFFFF;
+    --line:#DDE0D8; --gray:#6A7183;
+    --marker:#FFDE59; --marker-soft:#FFF3BF;
+    --cobalt:#2D5BFF; --cobalt-soft:#E9EEFF;
+    --green:#1E8E5A; --green-soft:#E4F4EC;
+    --violet:#7A3FD1; --violet-soft:#F1E9FC;
+    --amber:#B7791A; --amber-soft:#FBF1DE;
+    --radius:14px;
+    --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--cobalt);font-weight:500}
+  h2{font-family:var(--display);font-weight:700;font-size:clamp(25px,3.2vw,34px);letter-spacing:-.01em;margin-top:8px}
+  h3{font-family:var(--display);font-weight:600;font-size:19px}
+  section{padding:56px 0}
+  .sec-head{margin-bottom:28px}
+  .sec-head p{color:var(--ink-soft);margin-top:10px;max-width:74ch}
+  code{font-family:var(--mono);font-size:.9em;background:#EEF0EA;border-radius:5px;padding:1px 6px;color:var(--ink)}
+
+  header.hero{background:var(--ink);color:#fff;padding:58px 0 46px;border-bottom:4px solid var(--marker)}
+  .hero .eyebrow{color:var(--marker);margin-bottom:14px}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,4.6vw,48px);line-height:1.08;max-width:820px}
+  .hero p.sub{margin-top:16px;color:#C6CCDF;max-width:680px;font-size:17px}
+  .crumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px;font-family:var(--mono);font-size:12.5px}
+  .crumbs span{border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:6px 14px;color:#E8EBF5}
+
+  nav.top{position:sticky;top:0;z-index:30;background:rgba(246,247,243,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;gap:24px;overflow-x:auto}
+  nav.top a{display:block;padding:14px 0;white-space:nowrap;font-size:14px;font-weight:600;color:var(--gray);text-decoration:none;border-bottom:2.5px solid transparent}
+  nav.top a:hover{color:var(--cobalt);border-bottom-color:var(--cobalt)}
+  nav.top a.na{color:var(--ink)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px}
+  .definition{border-left:5px solid var(--cobalt);font-size:17px}
+  .definition strong{color:var(--cobalt)}
+
+  .persona-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+  .persona{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;display:flex;gap:15px;align-items:flex-start}
+  .avatar{width:46px;height:46px;border-radius:12px;flex:0 0 46px;display:grid;place-items:center;font-family:var(--display);font-weight:700;color:#fff;font-size:17px}
+  .av-d{background:linear-gradient(135deg,#2D5BFF,#5566E8)} .av-r{background:linear-gradient(135deg,#1E8E5A,#14A08E)}
+  .persona .who{font-weight:600;font-size:15.5px}
+  .persona .role{font-size:12px;color:var(--gray);font-family:var(--mono);letter-spacing:.02em;margin-bottom:5px}
+  .persona p{font-size:14px;color:var(--ink-soft)}
+  @media(max-width:820px){.persona-grid{grid-template-columns:1fr}}
+
+  .brief-wrap{display:grid;grid-template-columns:1.25fr .75fr;gap:20px;align-items:start;margin-top:20px}
+  .client-card{background:var(--ink);color:#DCE0EE;border-radius:var(--radius);padding:22px 24px}
+  .client-card h3{color:#fff;font-size:16px;margin-bottom:3px}
+  .client-card .cc-sub{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--marker);margin-bottom:12px}
+  .fact{display:flex;gap:10px;border-top:1px solid rgba(255,255,255,.12);padding:8px 0;font-size:13px}
+  .fact .fk{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8B94AE;min-width:78px;padding-top:2px}
+  .fict-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8B94AE;margin-top:12px;border-top:1px dashed rgba(255,255,255,.18);padding-top:9px}
+
+  .objective{display:flex;gap:14px;align-items:flex-start;background:var(--ink);color:#EDEFF6;border-radius:12px;padding:16px 20px;margin:18px 0 4px;font-size:15px;line-height:1.6}
+  .objective .olab{flex:0 0 auto;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--marker);border:1px solid rgba(255,222,89,.5);border-radius:999px;padding:3px 10px;margin-top:1px}
+  .setup{display:flex;gap:12px;align-items:flex-start;background:var(--cobalt-soft);border:1px solid #C3D0FF;border-radius:12px;padding:14px 18px;margin:12px 0 4px;font-size:14.5px;color:#22336b;line-height:1.6}
+  .setup .slab{flex:0 0 auto;font-size:18px;line-height:1.3}
+  .setup b{color:#152451} .setup a{color:var(--cobalt);font-weight:600}
+
+  .tk-diagram{background:#FBFBF7;border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0 18px}
+  .tk-diagram figcaption{font-family:var(--mono);font-size:11.5px;color:var(--gray);text-align:center;margin-top:8px}
+  .anat{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:16px 0}
+  .anat-row{display:grid;grid-template-columns:150px 1fr;gap:0;border-top:1px solid var(--line)}
+  .anat-row:first-child{border-top:none}
+  .anat-row .al{background:var(--ink);color:#fff;padding:16px 18px;font-family:var(--display);font-weight:700;font-size:15px;display:flex;flex-direction:column;gap:3px}
+  .anat-row .al span{font-family:var(--mono);font-weight:400;font-size:10.5px;letter-spacing:.08em;color:var(--marker);text-transform:uppercase}
+  .anat-row .ar{padding:14px 18px}
+  .anat-row .ar .plain{font-size:14.5px;color:var(--ink);font-weight:500}
+  .anat-row .ar .eg{margin:7px 0 0}
+  @media(max-width:640px){.anat-row{grid-template-columns:1fr}.anat-row .al{flex-direction:row;align-items:baseline;gap:8px}}
+  .eg{background:var(--marker-soft);border-radius:9px;padding:11px 15px;font-size:14.5px;color:#5b4a12;margin:9px 0;line-height:1.5}
+  .eg b{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:3px}
+  .eg .q{color:var(--ink);font-weight:600}
+  .think{background:var(--marker-soft);border:1px solid #F0DE8E;border-radius:10px;padding:14px 16px;margin:16px 0 0;font-size:14.5px;color:#5B4A12}
+  .think b{color:#7A6410;display:block;margin-bottom:4px;font-family:var(--display)}
+
+  .dl-card{display:flex;align-items:center;gap:16px;background:var(--cobalt-soft);border:1px solid #C3D0FF;border-radius:12px;padding:16px 18px;margin:14px 0;text-decoration:none;color:inherit;transition:border-color .15s, box-shadow .15s}
+  .dl-card:hover{border-color:var(--cobalt);box-shadow:0 2px 10px rgba(45,91,255,.12)}
+  .dl-card .dl-ic{flex:0 0 44px;width:44px;height:44px;border-radius:10px;background:var(--cobalt);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600}
+  .dl-card.v .dl-ic{background:var(--violet)}
+  .dl-card .dl-body{flex:1}
+  .dl-card .dl-body b{font-family:var(--display);font-size:15px;color:var(--ink)}
+  .dl-card .dl-body p{font-size:13.5px;color:var(--ink-soft);margin-top:2px}
+  .dl-card .dl-tag{font-family:var(--mono);font-size:11px;color:var(--cobalt);border:1px solid var(--cobalt);border-radius:999px;padding:4px 10px;white-space:nowrap}
+  .dl-card.v .dl-tag{color:var(--violet);border-color:var(--violet)}
+
+  .prompt-block{margin-top:26px}
+  .prompt-label{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+  .prompt-label .pn{font-family:var(--mono);font-weight:600;font-size:13px;background:var(--ink);color:var(--marker);border-radius:9px;padding:7px 12px;letter-spacing:.06em}
+  .prompt-label h3{font-size:18px}
+  .prompt-blank{background:#fff;border:1.5px dashed var(--cobalt);border-radius:12px;padding:17px 19px;font-family:var(--mono);font-size:13px;line-height:1.95;margin:12px 0 6px;color:var(--ink-soft)}
+  .prompt-blank .lbl{color:var(--cobalt);font-size:11px;letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:9px;font-weight:600}
+  .prompt-blank .blk{background:var(--marker-soft);border-bottom:1.5px solid var(--amber);padding:0 8px;border-radius:3px 3px 0 0;color:#6C5210;white-space:nowrap}
+  .prompt-box{background:var(--ink);color:#E9ECF6;border-radius:12px;padding:17px 19px;font-family:var(--mono);font-size:13px;line-height:1.7;margin:4px 0 6px}
+  .prompt-box .lbl{color:var(--marker);font-size:11px;letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:7px}
+  details.sol{margin:8px 0 6px;border:1px solid #D9C6F2;border-radius:12px;background:var(--violet-soft);overflow:hidden}
+  details.sol>summary{cursor:pointer;list-style:none;padding:12px 16px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--violet);font-weight:600;display:flex;align-items:center;gap:9px}
+  details.sol>summary::-webkit-details-marker{display:none}
+  details.sol>summary::before{content:"▶";font-size:9px;transition:transform .15s}
+  details.sol[open]>summary::before{transform:rotate(90deg)}
+  details.sol .sol-body{padding:0 16px 16px}
+  details.sol .note{font-size:13px;color:#4A2E77;margin-top:10px;line-height:1.55}
+
+  footer{padding:34px 0 50px;color:var(--gray);font-size:13px;font-family:var(--mono)}
+  footer .wrap{border-top:1px solid var(--line);padding-top:20px}
+  @media(max-width:820px){.brief-wrap{grid-template-columns:1fr}}
+  @media print{header.hero{background:#fff;color:#000}nav.top{display:none}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Session 16 · Skills &amp; Sub-agents</div>
+    <h1>Data Analysis and CXO output</h1>
+    <p class="sub">A client hands Harbourstone a raw sales export and one instruction: <b>make sense of it, and present it to our board.</b> You'll build a two-Skill pipeline in Cowork — one analyses the data, one turns it into a CXO deck — for the client's Q2 2026 board meeting.</p>
+    <div class="crumbs">
+      <span>&#128100; You are Dana Osei</span>
+      <span>&#129513; Hands-on</span>
+      <span>&#128421; Claude Cowork</span>
+      <span>&#128196; 1 data file · 2 Skills · 2 prompts</span>
+    </div>
+  </div>
+</header>
+
+<nav class="top">
+  <div class="wrap">
+    <a href="#scenario">1 &middot; Scenario</a>
+    <a href="#pipeline">2 &middot; The pipeline</a>
+    <a href="#files">3 &middot; Supporting files</a>
+    <a href="#prompts">4 &middot; The two prompts</a>
+  </div>
+</nav>
+
+<!-- ============ 1 · SCENARIO ============ -->
+<section id="scenario">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">1 &middot; The Scenario</div>
+      <h2>Northwind Devices &amp; Harbourstone Consulting</h2>
+      <p>Everything today happens inside one engagement.</p>
+    </div>
+
+    <div class="card definition" style="margin-bottom:4px">
+      <strong>The brief.</strong> Harbourstone's client <b>Northwind Devices</b> — a B2B computer hardware &amp; software reseller — has a board meeting on <b>1 September 2026</b> to review the quarter just ended, <b>Q2 2026 (Apr&ndash;Jun)</b>. Their CFO sends over one file: eighteen months of raw sales transactions, one row per order, no analysis. The ask: <b>"Tell us how we're really doing, and put it in front of our CXOs."</b> You are <b>Dana</b>, on Harbourstone's Data &amp; Insights team, and you'll build a <b>pipeline of two Skills</b> in Cowork so this job takes minutes — this quarter and every quarter after.
+    </div>
+
+    <div class="persona-grid">
+      <div class="persona">
+        <div class="avatar av-d">DO</div>
+        <div>
+          <div class="who">Dana Osei &mdash; that's you</div>
+          <div class="role">Consultant &middot; Data &amp; Insights</div>
+          <p>You own the analysis and build the pipeline that produces both the numbers and the board deck.</p>
+        </div>
+      </div>
+      <div class="persona">
+        <div class="avatar av-r">PR</div>
+        <div>
+          <div class="who">Priya Raman</div>
+          <div class="role">CFO, Northwind &middot; your audience</div>
+          <p>Priya presents your deck to the board. 30 seconds a slide, and she'll ask: vs last quarter? vs last year? what's the risk, and what do you need from us?</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="brief-wrap" style="margin-top:18px">
+      <div>
+        <div class="setup">
+          <span class="slab">&#128421;</span>
+          <div><b>What you need.</b> The <b>Claude Desktop App</b> with <b>Cowork</b> — from <a href="https://claude.ai/download">claude.ai/download</a> if you don't have it. Plus the client data file and the two Skills, below. <b>No coding.</b></div>
+        </div>
+        <div class="objective" style="margin-top:12px">
+          <span class="olab">The goal</span>
+          <div>Raw sales file &rarr; analysis workbook &rarr; <b>a CXO board deck for Northwind's Q2 2026 meeting</b>.</div>
+        </div>
+      </div>
+      <div class="client-card">
+        <h3>Northwind Devices</h3>
+        <div class="cc-sub">The client (fictional)</div>
+        <div class="fact"><span class="fk">Sector</span><span>B2B hardware, software &amp; services reseller</span></div>
+        <div class="fact"><span class="fk">Data</span><span>18 months of orders (Jan 2025 &ndash; Jun 2026)</span></div>
+        <div class="fact"><span class="fk">Meeting</span><span>Board / CXO review &mdash; 1 Sep 2026</span></div>
+        <div class="fact"><span class="fk">Period</span><span>Q2 2026 (Apr&ndash;Jun), vs prior Q &amp; YoY</span></div>
+        <div class="fact"><span class="fk">Output</span><span>Analysis workbook + board deck</span></div>
+        <div class="fict-note">Fictional &middot; workshop use only</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2 · PIPELINE ============ -->
+<section id="pipeline" style="background:#FBFBF7;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">2 &middot; The pipeline you're building</div>
+      <h2>Skills vs sub-agents</h2>
+      <p>Two ideas do all the work. A <b>Skill</b> is standing instructions; a <b>sub-agent</b> is a helper Cowork spins up on its own.</p>
+    </div>
+
+    <div class="card definition">
+      <strong>In one line each:</strong> a <b>Skill</b> is a note-to-self Cowork reads automatically — "when you see sales data, analyse it <em>this</em> way and lay the report out <em>that</em> way." A <b>sub-agent</b> is a separate worker with its own scratch space that the main agent hands a chunk of the job to, then gets a clean summary back. You write Skills; Cowork creates sub-agents for you.
+    </div>
+
+    <figure class="tk-diagram" style="margin-top:22px">
+      <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">
+        <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#6A7183"/></marker></defs>
+        <rect x="8" y="82" width="120" height="46" rx="11" fill="#fff" stroke="#DDE0D8"/>
+        <text x="68" y="102" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="13" fill="#1B2338">CSV</text>
+        <text x="68" y="118" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#3A4360">raw orders</text>
+        <line x1="132" y1="105" x2="166" y2="105" stroke="#6A7183" stroke-width="2" marker-end="url(#ar)"/>
+        <rect x="170" y="58" width="196" height="94" rx="12" fill="#E9EEFF" stroke="#2D5BFF"/>
+        <text x="268" y="80" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="13.5" fill="#1B2338">SKILL 1 · analyse</text>
+        <text x="268" y="96" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#3A4360">sales-analysis-report</text>
+        <rect x="184" y="106" width="40" height="34" rx="7" fill="#fff" stroke="#2D5BFF"/><text x="204" y="127" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#2D5BFF">region</text>
+        <rect x="228" y="106" width="42" height="34" rx="7" fill="#fff" stroke="#2D5BFF"/><text x="249" y="127" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#2D5BFF">product</text>
+        <rect x="274" y="106" width="34" height="34" rx="7" fill="#fff" stroke="#2D5BFF"/><text x="291" y="127" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#2D5BFF">rep</text>
+        <rect x="312" y="106" width="44" height="34" rx="7" fill="#fff" stroke="#2D5BFF"/><text x="334" y="127" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#2D5BFF">segment</text>
+        <text x="268" y="46" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#6A7183">sub-agents, in parallel</text>
+        <line x1="370" y1="105" x2="404" y2="105" stroke="#6A7183" stroke-width="2" marker-end="url(#ar)"/>
+        <rect x="408" y="82" width="120" height="46" rx="11" fill="#E4F4EC" stroke="#1E8E5A"/>
+        <text x="468" y="102" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="13" fill="#1B2338">Workbook</text>
+        <text x="468" y="118" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#3A4360">+ charts</text>
+        <line x1="532" y1="105" x2="566" y2="105" stroke="#6A7183" stroke-width="2" marker-end="url(#ar)"/>
+        <rect x="570" y="70" width="142" height="70" rx="12" fill="#1B2338"/>
+        <text x="641" y="98" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="12.5" fill="#fff">SKILL 2 · deck</text>
+        <text x="641" y="114" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#FFDE59">board-deck → .pptx</text>
+      </svg>
+      <figcaption>Skill 1 analyses (sub-agents run the breakdowns at once) → workbook → Skill 2 formats it for the CXOs.</figcaption>
+    </figure>
+
+    <div class="anat">
+      <div class="anat-row">
+        <div class="al">Skill<span>standing note</span></div>
+        <div class="ar">
+          <div class="plain">A folder with a <code>SKILL.md</code> file. Its <b>description</b> is the trigger; its body is the recipe. Installed once, reused forever.</div>
+          <div class="eg"><b>Northwind example</b><span class="q">sales-analysis-report</span> tells Cowork which breakdowns to run and what the report must contain — every quarter, identically.</div>
+        </div>
+      </div>
+      <div class="anat-row">
+        <div class="al">Sub-agent<span>a helper</span></div>
+        <div class="ar">
+          <div class="plain">A separate worker with its own context. You don't define them — you ask for parallel work and the lead agent splits it up.</div>
+          <div class="eg"><b>Northwind example</b>Region, product, rep and segment breakdowns each go to <span class="q">their own sub-agent</span> and run at the same time; only results come back.</div>
+        </div>
+      </div>
+      <div class="anat-row">
+        <div class="al">Chaining<span>step to step</span></div>
+        <div class="ar">
+          <div class="plain">One Skill's output feeds the next. Run them in the <em>same</em> Cowork task so step 2 can see step 1's numbers and charts.</div>
+          <div class="eg"><b>Northwind example</b>The <span class="q">board-deck</span> Skill reuses the workbook's figures instead of recomputing — same numbers on the slides as in the analysis.</div>
+        </div>
+      </div>
+      <div class="anat-row">
+        <div class="al">House style<span>consistency</span></div>
+        <div class="ar">
+          <div class="plain">Because the rules live in the Skill, the output looks the same whoever runs it and whenever they run it.</div>
+          <div class="eg"><b>Northwind example</b>Next quarter, or a colleague on another client, drops in a new CSV and gets the <span class="q">same board-ready format</span>.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="think"><b>Why a Skill instead of just asking?</b>If you only ever did this once, a plain prompt is fine. The Skill earns its keep on repetition and on governance — the "exclude returns", "every claim needs a number", "keep it at board altitude" rules are baked in, so the output doesn't drift from person to person or quarter to quarter.</div>
+  </div>
+</section>
+
+<!-- ============ 3 · SUPPORTING FILES ============ -->
+<section id="files">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">3 &middot; Supporting files</div>
+      <h2>Everything you need</h2>
+      <p>The data file is the client's. The two Skill zips are your workbench — one is <b>blank with hint headings</b> to fill in, the other holds the <b>worked solutions</b> to check against.</p>
+    </div>
+
+    <a class="dl-card" href="northwind_sales.csv" download>
+      <span class="dl-ic">CSV</span>
+      <span class="dl-body"><b>northwind_sales.csv</b><p>The client's raw sales export — 5,021 orders across 4 regions, 4 product lines, 3 segments.</p></span>
+      <span class="dl-tag">Click to Download</span>
+    </a>
+    <a class="dl-card" href="skills-blank.zip" download>
+      <span class="dl-ic">ZIP</span>
+      <span class="dl-body"><b>skills-blank.zip</b><p>Two Skill folders — <code>sales-analysis-report</code> and <code>board-deck</code> — with hint headings and blanks to complete.</p></span>
+      <span class="dl-tag">Click to Download</span>
+    </a>
+    <a class="dl-card v" href="skills-solution.zip" download>
+      <span class="dl-ic">ZIP</span>
+      <span class="dl-body"><b>skills-solution.zip</b><p>The same two Skills, fully written — the worked solutions.</p></span>
+      <span class="dl-tag">Click to Download</span>
+    </a>
+  </div>
+</section>
+
+<!-- ============ 4 · THE TWO PROMPTS ============ -->
+<section id="prompts" style="background:#FBFBF7;border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">4 &middot; The two prompts</div>
+      <h2>Your prompts for the run</h2>
+      <p>Two prompts, run back to back in the same Cowork task. Fill the blanks in yourself first, then open the solution to compare.</p>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-label"><span class="pn">PROMPT 1</span><h3>Analyse the data</h3></div>
+      <div class="prompt-blank">
+        <span class="lbl">Your prompt — fill the blanks</span>
+        Run our standard <span class="blk">&nbsp;which report?&nbsp;</span> on the attached Northwind sales data.<br>
+        Use <span class="blk">&nbsp;what kind of helpers?&nbsp;</span> to work the <span class="blk">&nbsp;which breakdowns?&nbsp;</span> in parallel.<br>
+        Clean first — <span class="blk">&nbsp;how to handle returns / dropped rows?&nbsp;</span>.<br>
+        Focus on <span class="blk">&nbsp;which period + comparisons?&nbsp;</span>.<br>
+        I want <span class="blk">&nbsp;which sections + a chart of…?&nbsp;</span> and <span class="blk">&nbsp;how many actions?&nbsp;</span>.<br>
+        Deliver it as <span class="blk">&nbsp;which file format?&nbsp;</span>, with the <span class="blk">&nbsp;what audit info at the top?&nbsp;</span>.
+      </div>
+      <details class="sol">
+        <summary>Show solution prompt</summary>
+        <div class="sol-body">
+          <div class="prompt-box">
+            <span class="lbl">Paste into Cowork</span>
+            Run our standard sales performance report on the attached Northwind Devices sales data. Use sub-agents to work the region, product, rep and customer-segment breakdowns in parallel, then assemble one report.<br><br>
+            Clean first: exclude returned orders from revenue, and tell me how many rows you dropped and why. Focus the period read on <b>Q2 2026 (Apr&ndash;Jun)</b> vs the prior quarter and vs the same quarter last year.<br><br>
+            I want an executive summary, headline metrics, a monthly revenue trend chart, breakdowns by region / product / rep / segment, and three recommended actions. Deliver it as an Excel workbook — a summary sheet plus one sheet per breakdown — and state the date range and row count at the top.
+          </div>
+          <p class="note">Naming the breakdowns is what triggers the parallel sub-agents. Pinning the period to Q2 2026 vs prior-Q and YoY is what makes it board-relevant rather than a generic dump.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-label"><span class="pn">PROMPT 2</span><h3>Build the CXO deck</h3></div>
+      <div class="prompt-blank">
+        <span class="lbl">Your prompt — fill the blanks</span>
+        Now turn that report into <span class="blk">&nbsp;a deck for whom?&nbsp;</span>.<br>
+        Reuse <span class="blk">&nbsp;reuse or recompute?&nbsp;</span> from the report.<br>
+        Details: company is <span class="blk">&nbsp;client?&nbsp;</span>; this is the <span class="blk">&nbsp;which meeting + date?&nbsp;</span>; presenter is <span class="blk">&nbsp;who?&nbsp;</span>; the ask for the board is <span class="blk">&nbsp;what decision?&nbsp;</span>.<br>
+        Keep it at <span class="blk">&nbsp;what altitude?&nbsp;</span>, include <span class="blk">&nbsp;which must-have slides?&nbsp;</span>, and add <span class="blk">&nbsp;notes where?&nbsp;</span>. Deliver a <span class="blk">&nbsp;file format?&nbsp;</span>.
+      </div>
+      <details class="sol">
+        <summary>Show solution prompt</summary>
+        <div class="sol-body">
+          <div class="prompt-box">
+            <span class="lbl">Paste into Cowork</span>
+            Now turn that report into a board deck for Northwind's C-suite. Reuse the numbers and charts you just produced — don't recompute.<br><br>
+            Details to use: company is <b>Northwind Devices</b>; this is the <b>Q2 2026 board meeting on 1 September 2026</b>; presenter is <b>Priya Raman, CFO</b>; and the ask for the board is <b>approval to shift two sales headcount from West to East</b> given the regional trend, plus <b>approval for a Q4 inventory build</b> ahead of the seasonal spike.<br><br>
+            Keep it at board altitude — one idea per slide, headline titles that state the conclusion, a KPI scorecard with vs-prior-quarter and YoY deltas, a risks-and-mitigations slide, and an explicit "decisions needed" slide. Put speaker notes on every content slide, including the likely board question and its answer. Deliver a .pptx.
+          </div>
+          <p class="note">Because both Skills are installed and named clearly, Cowork loads <code>board-deck</code> here and reuses the workbook's figures — same numbers on the slides as in the analysis.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Harbourstone Consulting and Northwind Devices are fictional, created for this workshop. Dana Osei and Priya Raman are fictional. All names, figures, and scenarios are illustrative and for training use only.<br><br>
+    Module 3 &middot; Session 10 &middot; Skills &amp; Sub-agents &mdash; Data Analysis and CXO output
+  </div>
+</footer>
+
+<script>
+  const navLinks = document.querySelectorAll('nav.top a');
+  const sections = [...navLinks].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        navLinks.forEach(a => a.classList.toggle('na', a.getAttribute('href') === '#' + id));
+      }
+    });
+  }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+  sections.forEach(s => io.observe(s));
+</script>
+
+</body>
+</html>
