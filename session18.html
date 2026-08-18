@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Critiquing & Iterating the Output — Harbourstone Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2338; --ink-soft:#3A4360; --paper:#F6F7F3; --card:#FFFFFF;
+    --line:#DDE0D8; --gray:#6A7183;
+    --marker:#FFDE59; --marker-soft:#FFF3BF;
+    --cobalt:#2D5BFF; --cobalt-soft:#E9EEFF;
+    --green:#1E8E5A; --green-soft:#E4F4EC;
+    --violet:#7A3FD1; --violet-soft:#F1E9FC;
+    --red:#B4443E; --red-soft:#FDECEC;
+    --amber:#B7791A; --amber-soft:#FBF1DE;
+    --radius:14px;
+    --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--cobalt);font-weight:500}
+  h2{font-family:var(--display);font-weight:700;font-size:clamp(25px,3.2vw,34px);letter-spacing:-.01em;margin-top:8px}
+  h3{font-family:var(--display);font-weight:600;font-size:19px}
+  section{padding:56px 0}
+  .sec-head{margin-bottom:28px}
+  .sec-head p{color:var(--ink-soft);margin-top:10px;max-width:74ch}
+  code{font-family:var(--mono);font-size:.9em;background:#EEF0EA;border-radius:5px;padding:1px 6px;color:var(--ink)}
+
+  header.hero{background:var(--ink);color:#fff;padding:58px 0 46px;border-bottom:4px solid var(--marker)}
+  .hero .eyebrow{color:var(--marker);margin-bottom:14px}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4.4vw,46px);line-height:1.08;max-width:860px}
+  .hero p.sub{margin-top:16px;color:#C6CCDF;max-width:700px;font-size:17px}
+  .crumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px;font-family:var(--mono);font-size:12.5px}
+  .crumbs span{border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:6px 14px;color:#E8EBF5}
+
+  nav.top{position:sticky;top:0;z-index:30;background:rgba(246,247,243,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;gap:24px;overflow-x:auto}
+  nav.top a{display:block;padding:14px 0;white-space:nowrap;font-size:14px;font-weight:600;color:var(--gray);text-decoration:none;border-bottom:2.5px solid transparent}
+  nav.top a:hover{color:var(--cobalt);border-bottom-color:var(--cobalt)}
+  nav.top a.na{color:var(--ink)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px}
+  .definition{border-left:5px solid var(--cobalt);font-size:17px}
+  .definition strong{color:var(--cobalt)}
+
+  .persona-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+  .persona{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;display:flex;gap:15px;align-items:flex-start}
+  .avatar{width:46px;height:46px;border-radius:12px;flex:0 0 46px;display:grid;place-items:center;font-family:var(--display);font-weight:700;color:#fff;font-size:17px}
+  .av-d{background:linear-gradient(135deg,#2D5BFF,#5566E8)} .av-r{background:linear-gradient(135deg,#1E8E5A,#14A08E)}
+  .persona .who{font-weight:600;font-size:15.5px}
+  .persona .role{font-size:12px;color:var(--gray);font-family:var(--mono);letter-spacing:.02em;margin-bottom:5px}
+  .persona p{font-size:14px;color:var(--ink-soft)}
+  @media(max-width:820px){.persona-grid{grid-template-columns:1fr}}
+
+  .brief-wrap{display:grid;grid-template-columns:1.25fr .75fr;gap:20px;align-items:start;margin-top:20px}
+  .client-card{background:var(--ink);color:#DCE0EE;border-radius:var(--radius);padding:22px 24px}
+  .client-card h3{color:#fff;font-size:16px;margin-bottom:3px}
+  .client-card .cc-sub{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--marker);margin-bottom:12px}
+  .fact{display:flex;gap:10px;border-top:1px solid rgba(255,255,255,.12);padding:8px 0;font-size:13px}
+  .fact .fk{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8B94AE;min-width:78px;padding-top:2px}
+  .fict-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8B94AE;margin-top:12px;border-top:1px dashed rgba(255,255,255,.18);padding-top:9px}
+
+  .objective{display:flex;gap:14px;align-items:flex-start;background:var(--ink);color:#EDEFF6;border-radius:12px;padding:16px 20px;margin:18px 0 4px;font-size:15px;line-height:1.6}
+  .objective .olab{flex:0 0 auto;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--marker);border:1px solid rgba(255,222,89,.5);border-radius:999px;padding:3px 10px;margin-top:1px}
+  .setup{display:flex;gap:12px;align-items:flex-start;background:var(--cobalt-soft);border:1px solid #C3D0FF;border-radius:12px;padding:14px 18px;margin:12px 0 4px;font-size:14.5px;color:#22336b;line-height:1.6}
+  .setup .slab{flex:0 0 auto;font-size:18px;line-height:1.3}
+  .setup b{color:#152451} .setup a{color:var(--cobalt);font-weight:600}
+
+  .tk-diagram{background:#FBFBF7;border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0 18px}
+  .tk-diagram figcaption{font-family:var(--mono);font-size:11.5px;color:var(--gray);text-align:center;margin-top:8px}
+  .anat{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:16px 0}
+  .anat-row{display:grid;grid-template-columns:150px 1fr;gap:0;border-top:1px solid var(--line)}
+  .anat-row:first-child{border-top:none}
+  .anat-row .al{background:var(--ink);color:#fff;padding:16px 18px;font-family:var(--display);font-weight:700;font-size:15px;display:flex;flex-direction:column;gap:3px}
+  .anat-row .al span{font-family:var(--mono);font-weight:400;font-size:10.5px;letter-spacing:.08em;color:var(--marker);text-transform:uppercase}
+  .anat-row .ar{padding:14px 18px}
+  .anat-row .ar .plain{font-size:14.5px;color:var(--ink);font-weight:500}
+  .anat-row .ar .eg{margin:7px 0 0}
+  @media(max-width:640px){.anat-row{grid-template-columns:1fr}.anat-row .al{flex-direction:row;align-items:baseline;gap:8px}}
+  .eg{background:var(--marker-soft);border-radius:9px;padding:11px 15px;font-size:14.5px;color:#5b4a12;margin:9px 0;line-height:1.5}
+  .eg b{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:3px}
+  .eg .q{color:var(--ink);font-weight:600}
+  .think{background:var(--marker-soft);border:1px solid #F0DE8E;border-radius:10px;padding:14px 16px;margin:16px 0 0;font-size:14.5px;color:#5B4A12}
+  .think b{color:#7A6410;display:block;margin-bottom:4px;font-family:var(--display)}
+
+  /* hidden-flaws callout */
+  .trap{background:var(--red-soft);border:1px solid #F1C7C4;border-radius:12px;padding:16px 18px;margin:22px 0 0;font-size:15px;color:#7A2418;line-height:1.6}
+  .trap .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:5px;font-weight:600}
+  .trap b{color:#5e1a11}
+  .trap ul{margin:8px 0 0;padding-left:2px;list-style:none}
+  .trap li{position:relative;padding-left:20px;margin-bottom:5px;font-size:14px}
+  .trap li::before{content:"✕";position:absolute;left:0;color:var(--red);font-weight:700}
+
+  /* panel personas */
+  .panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+  .rev{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px;border-top:3px solid var(--violet)}
+  .rev h4{font-family:var(--display);font-size:16px;margin-bottom:2px}
+  .rev .rk{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--violet);margin-bottom:9px}
+  .rev p{font-size:13.5px;color:var(--ink-soft);line-height:1.5}
+  .rev .ask{display:block;margin-top:9px;font-size:13px;color:var(--ink);font-style:italic;border-top:1px dashed var(--line);padding-top:8px}
+  @media(max-width:720px){.panel-grid{grid-template-columns:1fr}}
+
+  .dl-card{display:flex;align-items:center;gap:16px;background:var(--cobalt-soft);border:1px solid #C3D0FF;border-radius:12px;padding:16px 18px;margin:14px 0;text-decoration:none;color:inherit;transition:border-color .15s, box-shadow .15s}
+  .dl-card:hover{border-color:var(--cobalt);box-shadow:0 2px 10px rgba(45,91,255,.12)}
+  .dl-card .dl-ic{flex:0 0 44px;width:44px;height:44px;border-radius:10px;background:var(--cobalt);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600}
+  .dl-card.v .dl-ic{background:var(--violet)}
+  .dl-card .dl-body{flex:1}
+  .dl-card .dl-body b{font-family:var(--display);font-size:15px;color:var(--ink)}
+  .dl-card .dl-body p{font-size:13.5px;color:var(--ink-soft);margin-top:2px}
+  .dl-card .dl-tag{font-family:var(--mono);font-size:11px;color:var(--cobalt);border:1px solid var(--cobalt);border-radius:999px;padding:4px 10px;white-space:nowrap}
+  .dl-card.v .dl-tag{color:var(--violet);border-color:var(--violet)}
+
+  .prompt-block{margin-top:26px}
+  .prompt-label{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+  .prompt-label .pn{font-family:var(--mono);font-weight:600;font-size:13px;background:var(--ink);color:var(--marker);border-radius:9px;padding:7px 12px;letter-spacing:.06em}
+  .prompt-label h3{font-size:18px}
+  .prompt-blank{background:#fff;border:1.5px dashed var(--cobalt);border-radius:12px;padding:17px 19px;font-family:var(--mono);font-size:13px;line-height:1.95;margin:12px 0 6px;color:var(--ink-soft)}
+  .prompt-blank .lbl{color:var(--cobalt);font-size:11px;letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:9px;font-weight:600}
+  .prompt-blank .blk{background:var(--marker-soft);border-bottom:1.5px solid var(--amber);padding:0 8px;border-radius:3px 3px 0 0;color:#6C5210;white-space:nowrap}
+  .prompt-box{background:var(--ink);color:#E9ECF6;border-radius:12px;padding:17px 19px;font-family:var(--mono);font-size:13px;line-height:1.7;margin:4px 0 6px}
+  .prompt-box .lbl{color:var(--marker);font-size:11px;letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:7px}
+  details.sol{margin:8px 0 6px;border:1px solid #D9C6F2;border-radius:12px;background:var(--violet-soft);overflow:hidden}
+  details.sol>summary{cursor:pointer;list-style:none;padding:12px 16px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--violet);font-weight:600;display:flex;align-items:center;gap:9px}
+  details.sol>summary::-webkit-details-marker{display:none}
+  details.sol>summary::before{content:"▶";font-size:9px;transition:transform .15s}
+  details.sol[open]>summary::before{transform:rotate(90deg)}
+  details.sol .sol-body{padding:0 16px 16px}
+  details.sol .note{font-size:13px;color:#4A2E77;margin-top:10px;line-height:1.55}
+
+  footer{padding:34px 0 50px;color:var(--gray);font-size:13px;font-family:var(--mono)}
+  footer .wrap{border-top:1px solid var(--line);padding-top:20px}
+  @media(max-width:820px){.brief-wrap{grid-template-columns:1fr}}
+  @media print{header.hero{background:#fff;color:#000}nav.top{display:none}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Module 3 · Session 12 · Critique &amp; Iteration</div>
+    <h1>Critiquing &amp; Iterating the Output</h1>
+    <p class="sub">Your insights brief is written — but a first draft is never the deliverable. Today you turn Claude into a panel of <b>harsh reviewers</b> (a McKinsey EM, a skeptical CFO, a data hawk, an editor), compare what they each flag, and iterate to a v2 that survives the client. The critique is the point; the rewrite is the reward.</p>
+    <div class="crumbs">
+      <span>&#128100; You are Dana Osei</span>
+      <span>&#129513; Hands-on</span>
+      <span>&#128421; Claude Cowork</span>
+      <span>&#128196; 1 draft · 2 Skills · 2 prompts</span>
+    </div>
+  </div>
+</header>
+
+<nav class="top">
+  <div class="wrap">
+    <a href="#scenario">1 &middot; Scenario</a>
+    <a href="#pipeline">2 &middot; The pipeline</a>
+    <a href="#files">3 &middot; Supporting files</a>
+    <a href="#prompts">4 &middot; The two prompts</a>
+  </div>
+</nav>
+
+<!-- ============ 1 · SCENARIO ============ -->
+<section id="scenario">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">1 &middot; The Scenario</div>
+      <h2>The draft that isn't ready yet</h2>
+      <p>This picks up where the last session left off — you have the brief, now make it bulletproof.</p>
+    </div>
+
+    <div class="card definition" style="margin-bottom:4px">
+      <strong>The situation.</strong> Last session you produced a <b>Meaningful Insights brief</b> for Lumen Reach's video campaign. It's written — but it's a <b>first draft</b>, and it goes in front of the client's CMO next week. Your EM, <b>Raj</b>, would normally red-pen it, but he's buried. So you'll do what a good analyst does before showing a partner anything: <b>have Claude tear it apart first</b>. You'll configure it as a panel of tough reviewers — including a McKinsey-style EM reviewing a first-year analyst — <b>compare their critiques</b> to find what really matters, then iterate to a clean v2. (The draft has real problems baked in; the panel should find them.)
+    </div>
+
+    <div class="persona-grid">
+      <div class="persona">
+        <div class="avatar av-d">DO</div>
+        <div>
+          <div class="who">Dana Osei &mdash; that's you</div>
+          <div class="role">Consultant &middot; Data &amp; Insights</div>
+          <p>You wrote the draft. Now you invite the harshest feedback you can — on purpose — and act on it before Raj or the client ever see it.</p>
+        </div>
+      </div>
+      <div class="persona">
+        <div class="avatar av-r">RM</div>
+        <div>
+          <div class="who">Raj Malhotra</div>
+          <div class="role">Engagement Manager &middot; the quality bar</div>
+          <p>Raj's standards are the bar you're simulating: "lead with the answer," "where's the number behind that?", "what are you actually asking the client to do?"</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="brief-wrap" style="margin-top:18px">
+      <div>
+        <div class="setup">
+          <span class="slab">&#128421;</span>
+          <div><b>What you need.</b> The <b>Claude Desktop App</b> with <b>Cowork</b> — from <a href="https://claude.ai/download">claude.ai/download</a> if you don't have it. The v1 draft and the two Skills, below. Optionally re-attach last session's <code>campaign_data.xlsx</code> so the data reviewer can verify claims against source. <b>No coding.</b></div>
+        </div>
+        <div class="objective" style="margin-top:12px">
+          <span class="olab">The goal</span>
+          <div>v1 draft &rarr; a compared, prioritized panel critique &rarr; <b>a v2 brief that survives the client — plus a change log proving every fix</b>.</div>
+        </div>
+      </div>
+      <div class="client-card">
+        <h3>The deliverable under review</h3>
+        <div class="cc-sub">v1 · Insights brief</div>
+        <div class="fact"><span class="fk">Doc</span><span>Lumen Reach video campaign — Insights Brief v1</span></div>
+        <div class="fact"><span class="fk">Author</span><span>You (Harbourstone Data &amp; Insights)</span></div>
+        <div class="fact"><span class="fk">Audience</span><span>Lumen Reach CMO — next week</span></div>
+        <div class="fact"><span class="fk">Risk</span><span>Flawed claims reach the client unchallenged</span></div>
+        <div class="fact"><span class="fk">Goal</span><span>A v2 that holds up to scrutiny</span></div>
+        <div class="fict-note">Fictional &middot; workshop use only</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2 · PIPELINE ============ -->
+<section id="pipeline" style="background:#FBFBF7;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">2 &middot; The pipeline you're building</div>
+      <h2>A panel, then a rewrite</h2>
+      <p>A <b>Skill</b> is standing instructions; a <b>sub-agent</b> is a helper Cowork spins up on its own. Here each sub-agent is a different <em>reviewer</em> — run independently so their critiques stay genuinely different and you can compare them.</p>
+    </div>
+
+    <div class="card definition">
+      <strong>Why sub-agents are perfect for this:</strong> each reviewer gets its own context and persona, so the CFO doesn't parrot the EM and the editor doesn't soften the data hawk. You get four honest, independent reads — then the skill compares them. <b>Consensus is the signal; divergence is the judgement call.</b>
+    </div>
+
+    <figure class="tk-diagram" style="margin-top:22px">
+      <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">
+        <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#6A7183"/></marker></defs>
+        <rect x="8" y="82" width="118" height="46" rx="11" fill="#fff" stroke="#DDE0D8"/>
+        <text x="67" y="100" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="12" fill="#1B2338">brief v1</text>
+        <text x="67" y="116" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#3A4360">first draft</text>
+        <line x1="130" y1="105" x2="164" y2="105" stroke="#6A7183" stroke-width="2" marker-end="url(#ar)"/>
+        <rect x="168" y="52" width="198" height="106" rx="12" fill="#E9EEFF" stroke="#2D5BFF"/>
+        <text x="267" y="72" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="12.5" fill="#1B2338">SKILL 1 · critique-panel</text>
+        <rect x="180" y="82" width="42" height="30" rx="6" fill="#fff" stroke="#2D5BFF"/><text x="201" y="101" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#2D5BFF">EM</text>
+        <rect x="226" y="82" width="42" height="30" rx="6" fill="#fff" stroke="#2D5BFF"/><text x="247" y="101" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#2D5BFF">CFO</text>
+        <rect x="272" y="82" width="42" height="30" rx="6" fill="#fff" stroke="#2D5BFF"/><text x="293" y="101" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#2D5BFF">data</text>
+        <rect x="318" y="82" width="42" height="30" rx="6" fill="#fff" stroke="#2D5BFF"/><text x="339" y="101" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#2D5BFF">editor</text>
+        <text x="267" y="132" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#6A7183">4 reviewer sub-agents, in parallel</text>
+        <text x="267" y="148" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#2D5BFF">→ compare critiques</text>
+        <line x1="370" y1="105" x2="402" y2="105" stroke="#6A7183" stroke-width="2" marker-end="url(#ar)"/>
+        <rect x="406" y="82" width="120" height="46" rx="11" fill="#FBF1DE" stroke="#B7791A"/>
+        <text x="466" y="100" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="11.5" fill="#1B2338">prioritized</text>
+        <text x="466" y="116" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#7A2418">fix list</text>
+        <line x1="530" y1="105" x2="562" y2="105" stroke="#6A7183" stroke-width="2" marker-end="url(#ar)"/>
+        <rect x="566" y="66" width="146" height="78" rx="12" fill="#1B2338"/>
+        <text x="639" y="90" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="10.5" fill="#fff">SKILL 2 · revise</text>
+        <text x="639" y="105" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#FFDE59">brief v2</text>
+        <text x="639" y="121" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8FA0FF">+ change log</text>
+      </svg>
+      <figcaption>Brief v1 → four reviewer sub-agents critique in parallel → compared &amp; prioritized → Skill 2 rewrites to v2 with a change log.</figcaption>
+    </figure>
+
+    <div class="anat">
+      <div class="anat-row">
+        <div class="al">Skill<span>standing note</span></div>
+        <div class="ar">
+          <div class="plain">A folder with a <code>SKILL.md</code> file. Its <b>description</b> is the trigger; its body is the recipe. Installed once, reused forever.</div>
+          <div class="eg"><b>This session</b><span class="q">critique-panel</span> holds the four reviewer personas and the compare-and-prioritize logic, so any draft gets the same rigorous review.</div>
+        </div>
+      </div>
+      <div class="anat-row">
+        <div class="al">Sub-agent<span>a reviewer</span></div>
+        <div class="ar">
+          <div class="plain">A separate worker with its own context and persona. You ask for the panel; the lead agent runs each reviewer independently.</div>
+          <div class="eg"><b>This session</b>The EM, CFO, data hawk and editor each critique <span class="q">without seeing each other's notes</span> — so the critiques are truly independent.</div>
+        </div>
+      </div>
+      <div class="anat-row">
+        <div class="al">Compare<span>the point</span></div>
+        <div class="ar">
+          <div class="plain">Lay the critiques side by side. What 2+ reviewers flag is a real problem; what one flags is a judgement call.</div>
+          <div class="eg"><b>This session</b>If the EM <em>and</em> the data hawk both flag the 92%-VTR headline, that's a <span class="q">blocker</span>, not an opinion.</div>
+        </div>
+      </div>
+      <div class="anat-row">
+        <div class="al">Iterate<span>the reward</span></div>
+        <div class="ar">
+          <div class="plain">Rewrite deliberately — fix the consensus issues, keep the format, and log every change so the reviewer sees their notes landed.</div>
+          <div class="eg"><b>This session</b><span class="q">revise-from-critique</span> produces v2 plus a change log; nothing changes that a critique didn't ask for.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEET THE PANEL -->
+    <h3 style="margin-top:34px">Meet the panel — four lenses, on purpose different</h3>
+    <div class="panel-grid">
+      <div class="rev"><div class="rk">Reviewer 1</div><h4>The Engagement Manager</h4><p>A McKinsey EM reviewing a first-year analyst. Logic, structure, MECE, the "so what." Does the recommendation actually follow from the evidence?</p><span class="ask">First question: "Is your headline the answer, or just a topic?"</span></div>
+      <div class="rev"><div class="rk">Reviewer 2</div><h4>The Client Decision-Maker</h4><p>A skeptical CFO/CMO who has to act on it. Is there a clear ask? Is the impact quantified? Does it change a decision?</p><span class="ask">First question: "On how many impressions?"</span></div>
+      <div class="rev"><div class="rk">Reviewer 3</div><h4>The Data-Quality Skeptic</h4><p>Checks every number is defensible — volume behind each rate, no double-counting, no small-sample traps, no unsupported claims.</p><span class="ask">First question: "Show me the denominator."</span></div>
+      <div class="rev"><div class="rk">Reviewer 4</div><h4>The Executive Editor</h4><p>Can a busy exec get it in 30 seconds? Leads with the answer? Jargon, bloat, buried lede, weak title?</p><span class="ask">First question: "What's the one line that matters?"</span></div>
+    </div>
+
+    <!-- HIDDEN FLAWS -->
+    <div class="trap">
+      <span class="lab">What the panel should catch in v1</span>
+      The draft looks confident, but it quietly breaks the rules from last session. A good panel finds:
+      <ul>
+        <li>The headline leads with a <b>92% VTR on Connected TV + HD + Unruly</b> — the exact tiny-volume trap you were supposed to cut.</li>
+        <li>"Mobile inventory is performing well" — <b>a claim with no number.</b></li>
+        <li>"Top 12 placements get us to 2,450,000 impressions" — <b>likely double-counted</b>, shown with no running total.</li>
+        <li>"This will <b>guarantee</b> 62% VTR" — an over-claim no data supports.</li>
+        <li>No explicit <b>ask</b> — the client can't tell what decision they're being asked to make.</li>
+      </ul>
+    </div>
+
+    <div class="think"><b>Why not just ask "is this good?"</b>A single, vague "review this" gets you a single, vague answer. Naming distinct, demanding personas — and comparing them — forces specific, diverse critique and shows you which problems are real (everyone saw them) versus which are one reviewer's taste. That comparison is the skill this session builds.</div>
+  </div>
+</section>
+
+<!-- ============ 3 · SUPPORTING FILES ============ -->
+<section id="files">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">3 &middot; Supporting files</div>
+      <h2>Everything you need</h2>
+      <p>The draft is the thing under review. The two Skill zips are your workbench — one is <b>blank with hint headings</b> to fill in, the other holds the <b>worked solutions</b> to check against.</p>
+    </div>
+
+    <a class="dl-card" href="insights-onepager-v1.md" download>
+      <span class="dl-ic">MD</span>
+      <span class="dl-body"><b>insights-onepager-v1.md</b><p>The first-draft insights brief for Lumen Reach — flaws and all. This is what the panel reviews.</p></span>
+      <span class="dl-tag">Click to Download</span>
+    </a>
+    <a class="dl-card" href="skills-blank-critique.zip" download>
+      <span class="dl-ic">ZIP</span>
+      <span class="dl-body"><b>skills-blank-critique.zip</b><p>Two Skill folders — <code>critique-panel</code> and <code>revise-from-critique</code> — with hint headings and blanks to complete.</p></span>
+      <span class="dl-tag">Click to Download</span>
+    </a>
+    <a class="dl-card v" href="skills-solution-critique.zip" download>
+      <span class="dl-ic">ZIP</span>
+      <span class="dl-body"><b>skills-solution-critique.zip</b><p>The same two Skills, fully written — the worked solutions.</p></span>
+      <span class="dl-tag">Click to Download</span>
+    </a>
+  </div>
+</section>
+
+<!-- ============ 4 · THE TWO PROMPTS ============ -->
+<section id="prompts" style="background:#FBFBF7;border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">4 &middot; The two prompts</div>
+      <h2>Your prompts for the run</h2>
+      <p>Two prompts, run back to back in the same Cowork task. The first runs the harsh panel and compares the critiques; the second iterates to v2. Fill the blanks yourself, then open the solution to compare.</p>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-label"><span class="pn">PROMPT 1</span><h3>Run the harsh panel &amp; compare</h3></div>
+      <div class="prompt-blank">
+        <span class="lbl">Your prompt — fill the blanks</span>
+        Critique the attached one-pager with a panel of <span class="blk">&nbsp;how many reviewers, run how?&nbsp;</span>.<br>
+        Configure them as: <span class="blk">&nbsp;persona 1 — e.g. "a McKinsey EM reviewing a first-year analyst"&nbsp;</span>; <span class="blk">&nbsp;persona 2 — the skeptical client?&nbsp;</span>; <span class="blk">&nbsp;persona 3 — the data check?&nbsp;</span>; <span class="blk">&nbsp;persona 4 — the editor?&nbsp;</span>.<br>
+        Each returns <span class="blk">&nbsp;what, with what severity + fix?&nbsp;</span> and a <span class="blk">&nbsp;what score?&nbsp;</span>.<br>
+        Then <span class="blk">&nbsp;compare how — consensus vs one-off?&nbsp;</span> and give me <span class="blk">&nbsp;what final list?&nbsp;</span>.
+      </div>
+      <details class="sol">
+        <summary>Show solution prompt</summary>
+        <div class="sol-body">
+          <div class="prompt-box">
+            <span class="lbl">Paste into Cowork</span>
+            Critique the attached one-pager (the Lumen Reach insights brief v1) with a panel of four tough reviewers, each run as a separate sub-agent so their critiques stay independent. Configure them as:<br>
+            1) a McKinsey engagement manager reviewing a first-year analyst — logic, structure, is the headline the actual answer;<br>
+            2) a skeptical client CFO who must act on it — is there a clear ask, is impact quantified, "on how many impressions?";<br>
+            3) a data-quality skeptic — is there volume behind every rate, any double-counting or small-sample traps (verify against campaign_data.xlsx if I attach it);<br>
+            4) an executive editor — 30-second read, leads with the answer, jargon and bloat.<br><br>
+            Each reviewer returns their top 3 issues, each with a severity (Blocker / Major / Minor) and a specific fix that quotes the line, plus a score out of 5 and a one-line verdict. Then compare the critiques: show which issues 2+ reviewers agree on (fix first) versus one-reviewer-only, and give me a single prioritized fix list.
+          </div>
+          <p class="note">Naming four <em>distinct</em> personas and running them as sub-agents is what produces diverse critique. The comparison step is the learning objective — consensus issues are the real problems.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-label"><span class="pn">PROMPT 2</span><h3>Iterate to v2</h3></div>
+      <div class="prompt-blank">
+        <span class="lbl">Your prompt — fill the blanks</span>
+        Now produce a <span class="blk">&nbsp;which version?&nbsp;</span> of the one-pager that addresses <span class="blk">&nbsp;which issues first?&nbsp;</span>.<br>
+        For the one-reviewer-only notes, <span class="blk">&nbsp;accept / defer / reject — and do what?&nbsp;</span>.<br>
+        Keep it to <span class="blk">&nbsp;what length?&nbsp;</span> and re-check the numbers so you don't <span class="blk">&nbsp;reintroduce what?&nbsp;</span>.<br>
+        Give me the revised one-pager plus <span class="blk">&nbsp;what record of changes?&nbsp;</span> and a <span class="blk">&nbsp;what open-items list?&nbsp;</span>.
+      </div>
+      <details class="sol">
+        <summary>Show solution prompt</summary>
+        <div class="sol-body">
+          <div class="prompt-box">
+            <span class="lbl">Paste into Cowork</span>
+            Now produce a v2 of the one-pager that addresses the prioritized fixes. Fix all blockers and every consensus issue. For the persona-specific notes, accept the good ones and note anything you deliberately defer or reject, with a reason.<br><br>
+            Keep it to one page and the same format. Re-check the numbers so we don't reintroduce anything the panel caught — every rate must carry its volume, no double-counted totals, no "guarantee," and the shortlist must show a real running total to the 2.45M / 62% goal.<br><br>
+            Give me the revised one-pager, plus a change log (issue → what changed, grouped Fixed / Accepted / Deferred-or-Rejected), and a short "still open" list of anything that needs data or a human decision.
+          </div>
+          <p class="note">The change log is what makes iteration reviewable — Raj (or the client) can see every note was addressed. The "still open" list keeps you honest about what AI alone can't close.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Harbourstone Consulting and Lumen Reach are fictional, created for this workshop. Dana Osei and Raj Malhotra are fictional. All names, figures, and scenarios are illustrative and for training use only.<br><br>
+    Module 3 &middot; Session 12 &middot; Critique &amp; Iteration &mdash; Critiquing &amp; Iterating the Output
+  </div>
+</footer>
+
+<script>
+  const navLinks = document.querySelectorAll('nav.top a');
+  const sections = [...navLinks].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        navLinks.forEach(a => a.classList.toggle('na', a.getAttribute('href') === '#' + id));
+      }
+    });
+  }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+  sections.forEach(s => io.observe(s));
+</script>
+
+</body>
+</html>
